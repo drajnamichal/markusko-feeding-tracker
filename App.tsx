@@ -11,6 +11,30 @@ function App() {
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [showStats, setShowStats] = useState(false);
 
+  // Calculate baby's age
+  const calculateAge = () => {
+    const birthDate = new Date('2025-09-29');
+    const today = new Date();
+    
+    const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 30) {
+      return `${diffDays} ${diffDays === 1 ? 'deň' : diffDays < 5 ? 'dni' : 'dní'}`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      const remainingDays = diffDays % 30;
+      
+      let monthText = months === 1 ? 'mesiac' : months < 5 ? 'mesiace' : 'mesiacov';
+      let dayText = remainingDays === 1 ? 'deň' : remainingDays < 5 ? 'dni' : 'dní';
+      
+      if (remainingDays === 0) {
+        return `${months} ${monthText}`;
+      }
+      return `${months} ${monthText}, ${remainingDays} ${dayText}`;
+    }
+  };
+
   useEffect(() => {
     try {
       const storedEntries = localStorage.getItem('babyLogEntries');
@@ -74,22 +98,30 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <i className="fas fa-baby text-3xl text-teal-500"></i>
-            <h1 className="text-2xl font-bold text-slate-700">Sledovanie kŕmenia Markuska</h1>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-baby text-3xl text-teal-500"></i>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-700">Sledovanie kŕmenia Markuska</h1>
+                <p className="text-sm text-slate-500">
+                  <i className="fas fa-birthday-cake mr-1"></i>
+                  Vek: {calculateAge()}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowStats(!showStats)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                showStats 
+                  ? 'bg-teal-500 text-white hover:bg-teal-600' 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <i className={`fas ${showStats ? 'fa-list' : 'fa-chart-bar'} mr-2`}></i>
+              {showStats ? 'Záznamy' : 'Štatistiky'}
+            </button>
           </div>
-          <button
-            onClick={() => setShowStats(!showStats)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              showStats 
-                ? 'bg-teal-500 text-white hover:bg-teal-600' 
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            <i className={`fas ${showStats ? 'fa-list' : 'fa-chart-bar'} mr-2`}></i>
-            {showStats ? 'Záznamy' : 'Štatistiky'}
-          </button>
         </div>
       </header>
       <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
