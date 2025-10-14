@@ -5,11 +5,13 @@ import { INITIAL_ENTRIES } from './constants';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
 import Statistics from './components/Statistics';
+import { supabase, logEntryToDB, dbToLogEntry } from './supabaseClient';
 
 function App() {
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [showStats, setShowStats] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -35,55 +37,109 @@ function App() {
     }
   };
 
+  // Load entries from Supabase on mount
   useEffect(() => {
-    try {
-      const storedEntries = localStorage.getItem('babyLogEntries');
-      if (storedEntries) {
-        const parsedEntries = JSON.parse(storedEntries).map((entry: any) => ({
-          ...entry,
-          dateTime: new Date(entry.dateTime),
-        }));
-        setEntries(parsedEntries);
-      } else {
-        setEntries(INITIAL_ENTRIES);
-      }
-    } catch (error) {
-      console.error("Failed to load or parse entries from localStorage", error);
-      setEntries(INITIAL_ENTRIES);
-    }
+    loadEntries();
   }, []);
 
-  useEffect(() => {
+  const loadEntries = async () => {
     try {
-      if (entries.length > 0) {
-        localStorage.setItem('babyLogEntries', JSON.stringify(entries));
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('log_entries')
+        .select('*')
+        .order('date_time', { ascending: false });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const entries = data.map(dbToLogEntry);
+        setEntries(entries);
+      } else {
+        // If no data exists, migrate initial entries
+        await migrateInitialData();
       }
     } catch (error) {
-      console.error("Failed to save entries to localStorage", error);
+      console.error('Error loading entries:', error);
+      alert('Chyba pri načítaní dát z databázy');
+    } finally {
+      setLoading(false);
     }
-  }, [entries]);
+  };
 
-  const addEntry = (newEntry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => {
-    const entryWithDate = {
+  const migrateInitialData = async () => {
+    try {
+      const dbEntries = INITIAL_ENTRIES.map(logEntryToDB);
+      const { error } = await supabase
+        .from('log_entries')
+        .insert(dbEntries);
+
+      if (error) throw error;
+
+      setEntries(INITIAL_ENTRIES);
+    } catch (error) {
+      console.error('Error migrating initial data:', error);
+    }
+  };
+
+  const addEntry = async (newEntry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => {
+    const entryWithDate: LogEntry = {
       ...newEntry,
       id: new Date().toISOString() + Math.random(),
       dateTime: new Date(newEntry.dateTime),
     };
 
-    setEntries(prevEntries => [entryWithDate, ...prevEntries].sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()));
+    try {
+      const dbEntry = logEntryToDB(entryWithDate);
+      const { error } = await supabase
+        .from('log_entries')
+        .insert([dbEntry]);
+
+      if (error) throw error;
+
+      setEntries(prevEntries => [entryWithDate, ...prevEntries].sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()));
+    } catch (error) {
+      console.error('Error adding entry:', error);
+      alert('Chyba pri pridávaní záznamu');
+    }
   };
   
-  const deleteEntry = (id: string) => {
-    setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+  const deleteEntry = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('log_entries')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      alert('Chyba pri mazaní záznamu');
+    }
   };
 
-  const updateEntry = (updatedEntry: LogEntry) => {
-    setEntries(prevEntries => 
-      prevEntries.map(entry => 
-        entry.id === updatedEntry.id ? updatedEntry : entry
-      ).sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime())
-    );
-    setEditingEntry(null);
+  const updateEntry = async (updatedEntry: LogEntry) => {
+    try {
+      const dbEntry = logEntryToDB(updatedEntry);
+      const { error } = await supabase
+        .from('log_entries')
+        .update(dbEntry)
+        .eq('id', updatedEntry.id);
+
+      if (error) throw error;
+
+      setEntries(prevEntries => 
+        prevEntries.map(entry => 
+          entry.id === updatedEntry.id ? updatedEntry : entry
+        ).sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime())
+      );
+      setEditingEntry(null);
+    } catch (error) {
+      console.error('Error updating entry:', error);
+      alert('Chyba pri aktualizácii záznamu');
+    }
   };
 
   const startEditEntry = (entry: LogEntry) => {
@@ -94,6 +150,17 @@ function App() {
     setEditingEntry(null);
   };
 
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 font-sans flex items-center justify-center">
+        <div className="text-center">
+          <i className="fas fa-spinner fa-spin text-4xl text-teal-500 mb-4"></i>
+          <p className="text-slate-600">Načítavam dáta...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
