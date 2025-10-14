@@ -12,6 +12,7 @@ function App() {
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [showStats, setShowStats] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -41,6 +42,22 @@ function App() {
   useEffect(() => {
     loadEntries();
   }, []);
+
+  // Check for vitamin D reminder
+  useEffect(() => {
+    if (entries.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const hasVitaminDToday = entries.some(entry => {
+        const entryDate = new Date(entry.dateTime);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime() && entry.vitaminD;
+      });
+
+      setShowVitaminDReminder(!hasVitaminDToday);
+    }
+  }, [entries]);
 
   const loadEntries = async () => {
     try {
@@ -191,6 +208,29 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* Vitamin D Reminder */}
+      {showVitaminDReminder && (
+        <div className="container mx-auto px-4 pt-4">
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-sun text-3xl text-orange-500"></i>
+              <div>
+                <p className="font-bold text-orange-800">Pripomienka: Vitamín D</p>
+                <p className="text-sm text-orange-700">Nezabudnite dnes dať Markuskovi vitamín D!</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowVitaminDReminder(false)}
+              className="text-orange-500 hover:text-orange-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <EntryForm 

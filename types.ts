@@ -8,5 +8,6 @@ export interface LogEntry {
   breastfed: boolean;
   formulaMl: number;
   vomit: boolean;
+  vitaminD: boolean;
   notes: string;
 }
