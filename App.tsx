@@ -132,6 +132,7 @@ function App() {
 
   // Check for bathing reminder (every 2 days)
   useEffect(() => {
+    console.log('🛁 Bathing reminder check:', { loading, entriesCount: entries.length });
     if (!loading) {
       const now = new Date();
       
@@ -140,15 +141,19 @@ function App() {
         .filter(entry => entry.bathing)
         .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
 
+      console.log('🛁 Bathing entries found:', bathingEntries.length);
+
       if (bathingEntries.length > 0) {
         const lastBathing = bathingEntries[0].dateTime;
         const diffTime = now.getTime() - lastBathing.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
+        console.log('🛁 Days since last bathing:', diffDays);
         setDaysSinceLastBathing(diffDays);
         setShowBathingReminder(diffDays >= 2);
       } else {
         // No bathing recorded yet - show reminder
+        console.log('🛁 No bathing found - showing reminder');
         setDaysSinceLastBathing(999);
         setShowBathingReminder(true);
       }
