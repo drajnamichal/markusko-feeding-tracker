@@ -7,6 +7,7 @@ import LogList from './components/LogList';
 import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
 import WHOGuidelines from './components/WHOGuidelines';
+import DevelopmentGuide from './components/DevelopmentGuide';
 import { supabase, logEntryToDB, dbToLogEntry } from './supabaseClient';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   const [showWhiteNoise, setShowWhiteNoise] = useState(false);
   const [showWHO, setShowWHO] = useState(false);
+  const [showDevelopment, setShowDevelopment] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
@@ -250,6 +252,7 @@ function App() {
                   setShowStats(!showStats);
                   setShowWhiteNoise(false);
                   setShowWHO(false);
+                  setShowDevelopment(false);
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   showStats 
@@ -265,6 +268,7 @@ function App() {
                   setShowWHO(!showWHO);
                   setShowStats(false);
                   setShowWhiteNoise(false);
+                  setShowDevelopment(false);
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   showWHO 
@@ -277,9 +281,26 @@ function App() {
               </button>
               <button
                 onClick={() => {
+                  setShowDevelopment(!showDevelopment);
+                  setShowStats(false);
+                  setShowWhiteNoise(false);
+                  setShowWHO(false);
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  showDevelopment 
+                    ? 'bg-green-500 text-white hover:bg-green-600' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                <i className={`fas ${showDevelopment ? 'fa-list' : 'fa-baby-carriage'} mr-2`}></i>
+                {showDevelopment ? 'Záznamy' : 'Cvičenia'}
+              </button>
+              <button
+                onClick={() => {
                   setShowWhiteNoise(!showWhiteNoise);
                   setShowStats(false);
                   setShowWHO(false);
+                  setShowDevelopment(false);
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   showWhiteNoise 
@@ -372,7 +393,9 @@ function App() {
           />
         </div>
         <div className="lg:col-span-2">
-          {showWHO ? (
+          {showDevelopment ? (
+            <DevelopmentGuide birthDate={new Date('2025-09-29')} />
+          ) : showWHO ? (
             <WHOGuidelines entries={entries} birthDate={new Date('2025-09-29')} />
           ) : showWhiteNoise ? (
             <WhiteNoise />
