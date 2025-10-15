@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { LogEntry } from './types';
+import type { LogEntry, BabyProfile } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -58,5 +58,38 @@ export const dbToLogEntry = (dbEntry: LogEntryDB): LogEntry => ({
   tummyTime: dbEntry.tummy_time,
   sterilization: dbEntry.sterilization,
   notes: dbEntry.notes,
+});
+
+// Database types for BabyProfile
+export interface BabyProfileDB {
+  id: string;
+  name: string;
+  birth_date: string;
+  birth_time: string;
+  birth_weight_grams: number;
+  birth_height_cm: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Convert BabyProfile to database format
+export const babyProfileToDB = (profile: BabyProfile): Omit<BabyProfileDB, 'id' | 'created_at' | 'updated_at'> => ({
+  name: profile.name,
+  birth_date: profile.birthDate.toISOString().split('T')[0], // YYYY-MM-DD format
+  birth_time: profile.birthTime,
+  birth_weight_grams: profile.birthWeightGrams,
+  birth_height_cm: profile.birthHeightCm,
+});
+
+// Convert database format to BabyProfile
+export const dbToBabyProfile = (dbProfile: BabyProfileDB): BabyProfile => ({
+  id: dbProfile.id,
+  name: dbProfile.name,
+  birthDate: new Date(dbProfile.birth_date),
+  birthTime: dbProfile.birth_time,
+  birthWeightGrams: dbProfile.birth_weight_grams,
+  birthHeightCm: dbProfile.birth_height_cm,
+  createdAt: new Date(dbProfile.created_at),
+  updatedAt: new Date(dbProfile.updated_at),
 });
 

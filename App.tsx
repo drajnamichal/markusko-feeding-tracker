@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import type { LogEntry } from './types';
+import type { LogEntry, BabyProfile } from './types';
 import { INITIAL_ENTRIES } from './constants';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
@@ -8,7 +8,7 @@ import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
 import WHOGuidelines from './components/WHOGuidelines';
 import DevelopmentGuide from './components/DevelopmentGuide';
-import { supabase, logEntryToDB, dbToLogEntry } from './supabaseClient';
+import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, type BabyProfileDB } from './supabaseClient';
 
 function App() {
   const [entries, setEntries] = useState<LogEntry[]>([]);
@@ -23,12 +23,14 @@ function App() {
   const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
   const [showSterilizationReminder, setShowSterilizationReminder] = useState(false);
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
-  const [babyName, setBabyName] = useState<string>('');
-  const [showNameModal, setShowNameModal] = useState(false);
+  const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Calculate baby's age
   const calculateAge = () => {
-    const birthDate = new Date('2025-09-29');
+    if (!babyProfile) return '...';
+    
+    const birthDate = new Date(babyProfile.birthDate);
     const today = new Date();
     
     const diffTime = Math.abs(today.getTime() - birthDate.getTime());
@@ -50,28 +52,18 @@ function App() {
     }
   };
 
-  // Load baby name from localStorage on mount
+  // Load baby profile and entries from Supabase on mount
   useEffect(() => {
-    const savedName = localStorage.getItem('babyName');
-    if (savedName) {
-      setBabyName(savedName);
-    } else {
-      setBabyName('Markus Drajna');
-      localStorage.setItem('babyName', 'Markus Drajna');
-    }
-  }, []);
-
-  // Update document title when baby name changes
-  useEffect(() => {
-    if (babyName) {
-      document.title = babyName;
-    }
-  }, [babyName]);
-
-  // Load entries from Supabase on mount
-  useEffect(() => {
+    loadBabyProfile();
     loadEntries();
   }, []);
+
+  // Update document title when baby profile changes
+  useEffect(() => {
+    if (babyProfile) {
+      document.title = babyProfile.name;
+    }
+  }, [babyProfile]);
 
   // Check for vitamin D reminder
   useEffect(() => {
@@ -130,6 +122,29 @@ function App() {
       }
     }
   }, [entries]);
+
+  const loadBabyProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('baby_profile')
+        .select('*')
+        .limit(1)
+        .single();
+
+      if (error) {
+        // If profile doesn't exist, it should have been created by migration
+        console.error('Error loading baby profile:', error);
+        return;
+      }
+
+      if (data) {
+        const profile = dbToBabyProfile(data as BabyProfileDB);
+        setBabyProfile(profile);
+      }
+    } catch (error) {
+      console.error('Error loading baby profile:', error);
+    }
+  };
 
   const loadEntries = async () => {
     try {
@@ -239,10 +254,22 @@ function App() {
     setEditingEntry(null);
   };
 
-  const updateBabyName = (newName: string) => {
-    setBabyName(newName);
-    localStorage.setItem('babyName', newName);
-    setShowNameModal(false);
+  const updateBabyProfile = async (updatedProfile: BabyProfile) => {
+    try {
+      const dbProfile = babyProfileToDB(updatedProfile);
+      const { error } = await supabase
+        .from('baby_profile')
+        .update(dbProfile)
+        .eq('id', updatedProfile.id);
+
+      if (error) throw error;
+
+      setBabyProfile(updatedProfile);
+      setShowProfileModal(false);
+    } catch (error) {
+      console.error('Error updating baby profile:', error);
+      alert('Chyba pri aktualizácii profilu');
+    }
   };
 
 
@@ -266,11 +293,11 @@ function App() {
               <div className="text-4xl">👶</div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
-                  {babyName}
+                  {babyProfile?.name || 'Loading...'}
                   <button
-                    onClick={() => setShowNameModal(true)}
+                    onClick={() => setShowProfileModal(true)}
                     className="text-sm text-slate-400 hover:text-teal-500 transition-colors"
-                    title="Zmeniť meno"
+                    title="Upraviť profil"
                   >
                     <i className="fas fa-pen-to-square"></i>
                   </button>
@@ -351,14 +378,14 @@ function App() {
         </div>
       </header>
 
-      {/* Name Modal */}
-      {showNameModal && (
+      {/* Profile Modal */}
+      {showProfileModal && babyProfile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-800">Zmeniť meno bábätka</h2>
+              <h2 className="text-xl font-bold text-slate-800">Profil bábätka</h2>
               <button
-                onClick={() => setShowNameModal(false)}
+                onClick={() => setShowProfileModal(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <i className="fas fa-times text-xl"></i>
@@ -368,39 +395,116 @@ function App() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const newName = formData.get('babyName') as string;
-                if (newName.trim()) {
-                  updateBabyName(newName.trim());
+                const name = formData.get('name') as string;
+                const birthDate = formData.get('birthDate') as string;
+                const birthTime = formData.get('birthTime') as string;
+                const birthWeightGrams = parseInt(formData.get('birthWeightGrams') as string);
+                const birthHeightCm = parseFloat(formData.get('birthHeightCm') as string);
+                
+                if (name.trim() && birthDate && birthTime && birthWeightGrams && birthHeightCm) {
+                  const updatedProfile: BabyProfile = {
+                    ...babyProfile,
+                    name: name.trim(),
+                    birthDate: new Date(birthDate),
+                    birthTime: birthTime,
+                    birthWeightGrams: birthWeightGrams,
+                    birthHeightCm: birthHeightCm,
+                  };
+                  updateBabyProfile(updatedProfile);
                 }
               }}
             >
-              <div className="mb-4">
-                <label htmlFor="babyName" className="block text-sm font-medium text-slate-600 mb-2">
-                  Meno bábätka
-                </label>
-                <input
-                  type="text"
-                  id="babyName"
-                  name="babyName"
-                  defaultValue={babyName}
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                  placeholder="Napr. Markus Drajna"
-                  autoFocus
-                />
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-user mr-2"></i>Meno bábätka
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    defaultValue={babyProfile.name}
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Napr. Markus Drajna"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="birthDate" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-calendar mr-2"></i>Dátum narodenia
+                  </label>
+                  <input
+                    type="date"
+                    id="birthDate"
+                    name="birthDate"
+                    defaultValue={babyProfile.birthDate.toISOString().split('T')[0]}
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="birthTime" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-clock mr-2"></i>Čas narodenia
+                  </label>
+                  <input
+                    type="time"
+                    id="birthTime"
+                    name="birthTime"
+                    defaultValue={babyProfile.birthTime}
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="birthWeightGrams" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-weight mr-2"></i>Váha pri narodení (g)
+                  </label>
+                  <input
+                    type="number"
+                    id="birthWeightGrams"
+                    name="birthWeightGrams"
+                    defaultValue={babyProfile.birthWeightGrams}
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Napr. 3030"
+                    min="0"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="birthHeightCm" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-ruler-vertical mr-2"></i>Výška pri narodení (cm)
+                  </label>
+                  <input
+                    type="number"
+                    id="birthHeightCm"
+                    name="birthHeightCm"
+                    defaultValue={babyProfile.birthHeightCm}
+                    step="0.01"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="Napr. 51"
+                    min="0"
+                    required
+                  />
+                </div>
               </div>
-              <div className="flex gap-2">
+              
+              <div className="flex gap-2 mt-6">
                 <button
                   type="submit"
                   className="flex-1 bg-teal-500 text-white py-3 rounded-lg font-semibold hover:bg-teal-600 transition-colors"
                 >
-                  Uložiť
+                  <i className="fas fa-save mr-2"></i>Uložiť
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowNameModal(false)}
+                  onClick={() => setShowProfileModal(false)}
                   className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
                 >
-                  Zrušiť
+                  <i className="fas fa-times mr-2"></i>Zrušiť
                 </button>
               </div>
             </form>
@@ -416,7 +520,7 @@ function App() {
               <i className="fas fa-sun text-3xl text-orange-500"></i>
               <div>
                 <p className="font-bold text-orange-800">Pripomienka: Vitamín D</p>
-                <p className="text-sm text-orange-700">Nezabudnite dnes dať {babyName ? `${babyName}` : 'bábätku'} vitamín D!</p>
+                <p className="text-sm text-orange-700">Nezabudnite dnes dať {babyProfile?.name || 'bábätku'} vitamín D!</p>
               </div>
             </div>
             <button
@@ -486,9 +590,9 @@ function App() {
         </div>
         <div className="lg:col-span-2">
           {showDevelopment ? (
-            <DevelopmentGuide birthDate={new Date('2025-09-29')} />
+            babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
           ) : showWHO ? (
-            <WHOGuidelines entries={entries} birthDate={new Date('2025-09-29')} />
+            babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
           ) : showWhiteNoise ? (
             <WhiteNoise />
           ) : showStats ? (
