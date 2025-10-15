@@ -237,9 +237,9 @@ function App() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <i className="fas fa-baby text-3xl text-teal-500"></i>
+              <div className="text-4xl">👶</div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-700">Sledovanie kŕmenia Markuska</h1>
+                <h1 className="text-2xl font-bold text-slate-700">Sledovanie kŕmenia Markusíka</h1>
                 <p className="text-sm text-slate-500">
                   <i className="fas fa-birthday-cake mr-1"></i>
                   Vek: {calculateAge()}
