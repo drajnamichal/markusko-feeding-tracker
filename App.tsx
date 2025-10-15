@@ -74,7 +74,7 @@ function App() {
 
   // Check for vitamin D reminder
   useEffect(() => {
-    if (entries.length > 0) {
+    if (!loading) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -86,11 +86,11 @@ function App() {
 
       setShowVitaminDReminder(!hasVitaminDToday);
     }
-  }, [entries]);
+  }, [entries, loading]);
 
   // Check for tummy time reminder
   useEffect(() => {
-    if (entries.length > 0) {
+    if (!loading) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -103,11 +103,11 @@ function App() {
       setTummyTimeCount(tummyTimeToday);
       setShowTummyTimeReminder(tummyTimeToday < 3);
     }
-  }, [entries]);
+  }, [entries, loading]);
 
   // Check for sterilization reminder (every 2 days)
   useEffect(() => {
-    if (entries.length > 0) {
+    if (!loading) {
       const now = new Date();
       
       // Find last sterilization entry
@@ -128,11 +128,11 @@ function App() {
         setShowSterilizationReminder(true);
       }
     }
-  }, [entries]);
+  }, [entries, loading]);
 
   // Check for bathing reminder (every 2 days)
   useEffect(() => {
-    if (entries.length > 0) {
+    if (!loading) {
       const now = new Date();
       
       // Find last bathing entry
@@ -153,7 +153,7 @@ function App() {
         setShowBathingReminder(true);
       }
     }
-  }, [entries]);
+  }, [entries, loading]);
 
   const loadBabyProfile = async () => {
     try {
