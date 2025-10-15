@@ -56,10 +56,10 @@ export const dbToLogEntry = (dbEntry: LogEntryDB): LogEntry => ({
   breastfed: dbEntry.breastfed,
   formulaMl: dbEntry.formula_ml,
   vomit: dbEntry.vomit,
-  vitaminD: dbEntry.vitamin_d,
-  tummyTime: dbEntry.tummy_time,
-  sterilization: dbEntry.sterilization,
-  bathing: dbEntry.bathing,
+  vitaminD: dbEntry.vitamin_d ?? false,
+  tummyTime: dbEntry.tummy_time ?? false,
+  sterilization: dbEntry.sterilization ?? false,
+  bathing: dbEntry.bathing ?? false,
   notes: dbEntry.notes,
 });
 
