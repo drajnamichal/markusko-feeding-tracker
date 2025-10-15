@@ -8,6 +8,7 @@ import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
 import WHOGuidelines from './components/WHOGuidelines';
 import DevelopmentGuide from './components/DevelopmentGuide';
+import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, type BabyProfileDB, type MeasurementDB } from './supabaseClient';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [showTummyTimeStopwatch, setShowTummyTimeStopwatch] = useState(false);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -326,6 +328,25 @@ function App() {
     }
   };
 
+  const saveTummyTime = async (seconds: number) => {
+    const now = new Date();
+    const newEntry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
+      dateTime: now.toISOString(),
+      poop: false,
+      pee: false,
+      breastMilkMl: 0,
+      breastfed: false,
+      formulaMl: 0,
+      vomit: false,
+      vitaminD: false,
+      tummyTime: true,
+      sterilization: false,
+      notes: `Tummy Time: ${Math.floor(seconds / 60)} min ${seconds % 60} sek`,
+    };
+
+    await addEntry(newEntry);
+  };
+
 
   if (loading) {
     return (
@@ -370,6 +391,14 @@ function App() {
               >
                 <i className="fas fa-ruler-combined mr-2"></i>
                 Zaznamenať miery
+              </button>
+              <button
+                onClick={() => setShowTummyTimeStopwatch(true)}
+                className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
+                title="Tummy Time stopky"
+              >
+                <i className="fas fa-stopwatch mr-2"></i>
+                Tummy Time
               </button>
               <button
                 onClick={() => {
@@ -706,6 +735,14 @@ function App() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Tummy Time Stopwatch */}
+      {showTummyTimeStopwatch && (
+        <TummyTimeStopwatch
+          onClose={() => setShowTummyTimeStopwatch(false)}
+          onSave={saveTummyTime}
+        />
       )}
 
       {/* Reminders */}
