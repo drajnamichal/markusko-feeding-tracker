@@ -5,6 +5,7 @@ import { INITIAL_ENTRIES } from './constants';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
 import Statistics from './components/Statistics';
+import WhiteNoise from './components/WhiteNoise';
 import { supabase, logEntryToDB, dbToLogEntry } from './supabaseClient';
 
 function App() {
@@ -323,13 +324,14 @@ function App() {
       </div>
 
       <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <EntryForm 
             onAddEntry={addEntry} 
             editingEntry={editingEntry}
             onUpdateEntry={updateEntry}
             onCancelEdit={cancelEdit}
           />
+          <WhiteNoise />
         </div>
         <div className="lg:col-span-2">
           {showStats ? (
