@@ -6,6 +6,7 @@ import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
 import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
+import WHOGuidelines from './components/WHOGuidelines';
 import { supabase, logEntryToDB, dbToLogEntry } from './supabaseClient';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [showStats, setShowStats] = useState(false);
   const [showWhiteNoise, setShowWhiteNoise] = useState(false);
+  const [showWHO, setShowWHO] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
@@ -242,11 +244,12 @@ function App() {
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => {
                   setShowStats(!showStats);
                   setShowWhiteNoise(false);
+                  setShowWHO(false);
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   showStats 
@@ -259,8 +262,24 @@ function App() {
               </button>
               <button
                 onClick={() => {
+                  setShowWHO(!showWHO);
+                  setShowStats(false);
+                  setShowWhiteNoise(false);
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  showWHO 
+                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                <i className={`fas ${showWHO ? 'fa-list' : 'fa-stethoscope'} mr-2`}></i>
+                {showWHO ? 'Záznamy' : 'WHO'}
+              </button>
+              <button
+                onClick={() => {
                   setShowWhiteNoise(!showWhiteNoise);
                   setShowStats(false);
+                  setShowWHO(false);
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   showWhiteNoise 
@@ -353,7 +372,9 @@ function App() {
           />
         </div>
         <div className="lg:col-span-2">
-          {showWhiteNoise ? (
+          {showWHO ? (
+            <WHOGuidelines entries={entries} birthDate={new Date('2025-09-29')} />
+          ) : showWhiteNoise ? (
             <WhiteNoise />
           ) : showStats ? (
             <Statistics entries={entries} />
