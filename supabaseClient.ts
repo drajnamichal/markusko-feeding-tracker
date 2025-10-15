@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { LogEntry, BabyProfile } from './types';
+import type { LogEntry, BabyProfile, Measurement } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -91,5 +91,38 @@ export const dbToBabyProfile = (dbProfile: BabyProfileDB): BabyProfile => ({
   birthHeightCm: dbProfile.birth_height_cm,
   createdAt: new Date(dbProfile.created_at),
   updatedAt: new Date(dbProfile.updated_at),
+});
+
+// Database types for Measurement
+export interface MeasurementDB {
+  id: string;
+  baby_profile_id: string;
+  measured_at: string;
+  weight_grams: number;
+  height_cm: number;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Convert Measurement to database format
+export const measurementToDB = (measurement: Measurement): Omit<MeasurementDB, 'id' | 'created_at' | 'updated_at'> => ({
+  baby_profile_id: measurement.babyProfileId,
+  measured_at: measurement.measuredAt.toISOString(),
+  weight_grams: measurement.weightGrams,
+  height_cm: measurement.heightCm,
+  notes: measurement.notes || '',
+});
+
+// Convert database format to Measurement
+export const dbToMeasurement = (dbMeasurement: MeasurementDB): Measurement => ({
+  id: dbMeasurement.id,
+  babyProfileId: dbMeasurement.baby_profile_id,
+  measuredAt: new Date(dbMeasurement.measured_at),
+  weightGrams: dbMeasurement.weight_grams,
+  heightCm: dbMeasurement.height_cm,
+  notes: dbMeasurement.notes,
+  createdAt: new Date(dbMeasurement.created_at),
+  updatedAt: new Date(dbMeasurement.updated_at),
 });
 

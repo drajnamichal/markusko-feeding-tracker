@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import type { LogEntry, BabyProfile } from './types';
+import type { LogEntry, BabyProfile, Measurement } from './types';
 import { INITIAL_ENTRIES } from './constants';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
@@ -8,7 +8,7 @@ import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
 import WHOGuidelines from './components/WHOGuidelines';
 import DevelopmentGuide from './components/DevelopmentGuide';
-import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, type BabyProfileDB } from './supabaseClient';
+import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, type BabyProfileDB, type MeasurementDB } from './supabaseClient';
 
 function App() {
   const [entries, setEntries] = useState<LogEntry[]>([]);
@@ -25,6 +25,8 @@ function App() {
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showMeasurementModal, setShowMeasurementModal] = useState(false);
+  const [measurements, setMeasurements] = useState<Measurement[]>([]);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -62,6 +64,7 @@ function App() {
   useEffect(() => {
     if (babyProfile) {
       document.title = babyProfile.name;
+      loadMeasurements();
     }
   }, [babyProfile]);
 
@@ -272,6 +275,57 @@ function App() {
     }
   };
 
+  const addMeasurement = async (weightGrams: number, heightCm: number, notes: string) => {
+    if (!babyProfile) return;
+
+    const newMeasurement: Measurement = {
+      id: new Date().toISOString() + Math.random(),
+      babyProfileId: babyProfile.id,
+      measuredAt: new Date(),
+      weightGrams: weightGrams,
+      heightCm: heightCm,
+      notes: notes,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    try {
+      const dbMeasurement = measurementToDB(newMeasurement);
+      const { error } = await supabase
+        .from('measurements')
+        .insert([dbMeasurement]);
+
+      if (error) throw error;
+
+      setMeasurements(prev => [newMeasurement, ...prev]);
+      setShowMeasurementModal(false);
+    } catch (error) {
+      console.error('Error adding measurement:', error);
+      alert('Chyba pri pridávaní merania');
+    }
+  };
+
+  const loadMeasurements = async () => {
+    if (!babyProfile) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('measurements')
+        .select('*')
+        .eq('baby_profile_id', babyProfile.id)
+        .order('measured_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const measurements = data.map(dbToMeasurement);
+        setMeasurements(measurements);
+      }
+    } catch (error) {
+      console.error('Error loading measurements:', error);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -309,6 +363,14 @@ function App() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setShowMeasurementModal(true)}
+                className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600"
+                title="Zaznamenať miery"
+              >
+                <i className="fas fa-ruler-combined mr-2"></i>
+                Zaznamenať miery
+              </button>
               <button
                 onClick={() => {
                   setShowStats(!showStats);
@@ -508,6 +570,140 @@ function App() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Measurement Modal */}
+      {showMeasurementModal && babyProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-slate-800">
+                <i className="fas fa-ruler-combined mr-2 text-pink-500"></i>
+                Zaznamenať miery
+              </h2>
+              <button
+                onClick={() => setShowMeasurementModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <i className="fas fa-times text-xl"></i>
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const weightGrams = parseInt(formData.get('weightGrams') as string);
+                const heightCm = parseFloat(formData.get('heightCm') as string);
+                const notes = (formData.get('notes') as string) || '';
+                
+                if (weightGrams && heightCm) {
+                  addMeasurement(weightGrams, heightCm, notes);
+                }
+              }}
+            >
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="weightGrams" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-weight mr-2 text-pink-500"></i>Váha (g)
+                  </label>
+                  <input
+                    type="number"
+                    id="weightGrams"
+                    name="weightGrams"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    placeholder="Napr. 3500"
+                    min="0"
+                    required
+                    autoFocus
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Pri narodení: {babyProfile.birthWeightGrams}g</p>
+                </div>
+                
+                <div>
+                  <label htmlFor="heightCm" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-ruler-vertical mr-2 text-pink-500"></i>Výška (cm)
+                  </label>
+                  <input
+                    type="number"
+                    id="heightCm"
+                    name="heightCm"
+                    step="0.1"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    placeholder="Napr. 52.5"
+                    min="0"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Pri narodení: {babyProfile.birthHeightCm}cm</p>
+                </div>
+                
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-note-sticky mr-2 text-pink-500"></i>Poznámka (voliteľné)
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={2}
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    placeholder="Napr. Po kŕmení, pred spánkom..."
+                  ></textarea>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 mt-6">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-rose-600 transition-all"
+                >
+                  <i className="fas fa-save mr-2"></i>Uložiť meranie
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMeasurementModal(false)}
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+                >
+                  <i className="fas fa-times mr-2"></i>Zrušiť
+                </button>
+              </div>
+            </form>
+
+            {/* Recent Measurements */}
+            {measurements.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <h3 className="text-sm font-bold text-slate-700 mb-3">
+                  <i className="fas fa-clock-rotate-left mr-2"></i>Posledné merania
+                </h3>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {measurements.slice(0, 5).map((measurement) => (
+                    <div key={measurement.id} className="bg-slate-50 p-3 rounded-lg text-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-slate-700">
+                          {new Date(measurement.measuredAt).toLocaleDateString('sk-SK')}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          {new Date(measurement.measuredAt).toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-slate-600">
+                        <span>
+                          <i className="fas fa-weight text-pink-500 mr-1"></i>
+                          {measurement.weightGrams}g
+                        </span>
+                        <span>
+                          <i className="fas fa-ruler-vertical text-pink-500 mr-1"></i>
+                          {measurement.heightCm}cm
+                        </span>
+                      </div>
+                      {measurement.notes && (
+                        <p className="text-xs text-slate-500 mt-1 italic">{measurement.notes}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

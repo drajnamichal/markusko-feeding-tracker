@@ -23,3 +23,14 @@ export interface BabyProfile {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface Measurement {
+  id: string;
+  babyProfileId: string;
+  measuredAt: Date;
+  weightGrams: number;
+  heightCm: number;
+  notes: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
