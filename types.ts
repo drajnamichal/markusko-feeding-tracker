@@ -10,5 +10,6 @@ export interface LogEntry {
   vomit: boolean;
   vitaminD: boolean;
   tummyTime: boolean;
+  sterilization: boolean;
   notes: string;
 }

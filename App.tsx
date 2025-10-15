@@ -15,6 +15,8 @@ function App() {
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
   const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
+  const [showSterilizationReminder, setShowSterilizationReminder] = useState(false);
+  const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -75,6 +77,31 @@ function App() {
 
       setTummyTimeCount(tummyTimeToday);
       setShowTummyTimeReminder(tummyTimeToday < 3);
+    }
+  }, [entries]);
+
+  // Check for sterilization reminder (every 2 days)
+  useEffect(() => {
+    if (entries.length > 0) {
+      const now = new Date();
+      
+      // Find last sterilization entry
+      const sterilizationEntries = entries
+        .filter(entry => entry.sterilization)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (sterilizationEntries.length > 0) {
+        const lastSterilization = sterilizationEntries[0].dateTime;
+        const diffTime = now.getTime() - lastSterilization.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        setDaysSinceLastSterilization(diffDays);
+        setShowSterilizationReminder(diffDays >= 2);
+      } else {
+        // No sterilization recorded yet - show reminder
+        setDaysSinceLastSterilization(999);
+        setShowSterilizationReminder(true);
+      }
     }
   }, [entries]);
 
@@ -263,6 +290,30 @@ function App() {
             <button
               onClick={() => setShowTummyTimeReminder(false)}
               className="text-indigo-500 hover:text-indigo-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {showSterilizationReminder && (
+          <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-flask text-3xl text-cyan-500"></i>
+              <div>
+                <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fľaše/odsávačky</p>
+                <p className="text-sm text-cyan-700">
+                  {daysSinceLastSterilization >= 999 
+                    ? 'Ešte ste nezaznamenali sterilizáciu!' 
+                    : `Posledná sterilizácia pred ${daysSinceLastSterilization} ${daysSinceLastSterilization === 1 ? 'dňom' : 'dňami'}. Čas na novú sterilizáciu!`
+                  }
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSterilizationReminder(false)}
+              className="text-cyan-500 hover:text-cyan-700 transition-colors"
               aria-label="Zavrieť pripomienku"
             >
               <i className="fas fa-times text-xl"></i>
