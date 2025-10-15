@@ -843,7 +843,7 @@ function App() {
             <div className="flex items-center gap-3">
               <i className="fas fa-bath text-3xl text-blue-500"></i>
               <div>
-                <p className="font-bold text-blue-800">Pripomienka: Kúpanie {babyProfile?.name || 'Markusíka'}</p>
+                <p className="font-bold text-blue-800">Pripomienka: Kúpanie</p>
                 <p className="text-sm text-blue-700">
                   {daysSinceLastBathing >= 999 
                     ? 'Ešte ste nezaznamenali kúpanie!' 
