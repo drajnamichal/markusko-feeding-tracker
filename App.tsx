@@ -12,6 +12,7 @@ function App() {
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [showStats, setShowStats] = useState(false);
+  const [showWhiteNoise, setShowWhiteNoise] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
@@ -241,17 +242,36 @@ function App() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setShowStats(!showStats)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                showStats 
-                  ? 'bg-teal-500 text-white hover:bg-teal-600' 
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              <i className={`fas ${showStats ? 'fa-list' : 'fa-chart-bar'} mr-2`}></i>
-              {showStats ? 'Záznamy' : 'Štatistiky'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowStats(!showStats);
+                  setShowWhiteNoise(false);
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  showStats 
+                    ? 'bg-teal-500 text-white hover:bg-teal-600' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                <i className={`fas ${showStats ? 'fa-list' : 'fa-chart-bar'} mr-2`}></i>
+                {showStats ? 'Záznamy' : 'Štatistiky'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowWhiteNoise(!showWhiteNoise);
+                  setShowStats(false);
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  showWhiteNoise 
+                    ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                <i className={`fas ${showWhiteNoise ? 'fa-list' : 'fa-music'} mr-2`}></i>
+                {showWhiteNoise ? 'Záznamy' : 'White Noise'}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -324,17 +344,18 @@ function App() {
       </div>
 
       <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1">
           <EntryForm 
             onAddEntry={addEntry} 
             editingEntry={editingEntry}
             onUpdateEntry={updateEntry}
             onCancelEdit={cancelEdit}
           />
-          <WhiteNoise />
         </div>
         <div className="lg:col-span-2">
-          {showStats ? (
+          {showWhiteNoise ? (
+            <WhiteNoise />
+          ) : showStats ? (
             <Statistics entries={entries} />
           ) : (
             <LogList 
