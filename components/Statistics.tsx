@@ -195,7 +195,7 @@ const Statistics: React.FC<StatisticsProps> = ({ entries }) => {
           />
           <StatCard 
             icon="fa-heart" 
-            label="Dojčené" 
+            label="Dojčenie" 
             value={stats.today.breastfedCount}
             color="text-pink-500"
           />
