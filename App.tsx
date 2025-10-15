@@ -24,6 +24,8 @@ function App() {
   const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
   const [showSterilizationReminder, setShowSterilizationReminder] = useState(false);
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
+  const [showBathingReminder, setShowBathingReminder] = useState(false);
+  const [daysSinceLastBathing, setDaysSinceLastBathing] = useState(0);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
@@ -124,6 +126,31 @@ function App() {
         // No sterilization recorded yet - show reminder
         setDaysSinceLastSterilization(999);
         setShowSterilizationReminder(true);
+      }
+    }
+  }, [entries]);
+
+  // Check for bathing reminder (every 2 days)
+  useEffect(() => {
+    if (entries.length > 0) {
+      const now = new Date();
+      
+      // Find last bathing entry
+      const bathingEntries = entries
+        .filter(entry => entry.bathing)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (bathingEntries.length > 0) {
+        const lastBathing = bathingEntries[0].dateTime;
+        const diffTime = now.getTime() - lastBathing.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        setDaysSinceLastBathing(diffDays);
+        setShowBathingReminder(diffDays >= 2);
+      } else {
+        // No bathing recorded yet - show reminder
+        setDaysSinceLastBathing(999);
+        setShowBathingReminder(true);
       }
     }
   }, [entries]);
@@ -804,6 +831,30 @@ function App() {
             <button
               onClick={() => setShowSterilizationReminder(false)}
               className="text-cyan-500 hover:text-cyan-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {showBathingReminder && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-bath text-3xl text-blue-500"></i>
+              <div>
+                <p className="font-bold text-blue-800">Pripomienka: Kúpanie {babyProfile?.name || 'Markusíka'}</p>
+                <p className="text-sm text-blue-700">
+                  {daysSinceLastBathing >= 999 
+                    ? 'Ešte ste nezaznamenali kúpanie!' 
+                    : `Posledné kúpanie pred ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dňom' : 'dňami'}. Čas na kúpanie!`
+                  }
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowBathingReminder(false)}
+              className="text-blue-500 hover:text-blue-700 transition-colors"
               aria-label="Zavrieť pripomienku"
             >
               <i className="fas fa-times text-xl"></i>
