@@ -21,6 +21,7 @@ export interface LogEntryDB {
   formula_ml: number;
   vomit: boolean;
   vitamin_d: boolean;
+  tummy_time: boolean;
   notes: string;
   created_at: string;
   updated_at: string;
@@ -37,6 +38,7 @@ export const logEntryToDB = (entry: LogEntry): Omit<LogEntryDB, 'created_at' | '
   formula_ml: entry.formulaMl,
   vomit: entry.vomit,
   vitamin_d: entry.vitaminD,
+  tummy_time: entry.tummyTime,
   notes: entry.notes,
 });
 
@@ -51,6 +53,7 @@ export const dbToLogEntry = (dbEntry: LogEntryDB): LogEntry => ({
   formulaMl: dbEntry.formula_ml,
   vomit: dbEntry.vomit,
   vitaminD: dbEntry.vitamin_d,
+  tummyTime: dbEntry.tummy_time,
   notes: dbEntry.notes,
 });
 

@@ -13,6 +13,8 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
+  const [tummyTimeCount, setTummyTimeCount] = useState(0);
+  const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -56,6 +58,23 @@ function App() {
       });
 
       setShowVitaminDReminder(!hasVitaminDToday);
+    }
+  }, [entries]);
+
+  // Check for tummy time reminder
+  useEffect(() => {
+    if (entries.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const tummyTimeToday = entries.filter(entry => {
+        const entryDate = new Date(entry.dateTime);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime() && entry.tummyTime;
+      }).length;
+
+      setTummyTimeCount(tummyTimeToday);
+      setShowTummyTimeReminder(tummyTimeToday < 3);
     }
   }, [entries]);
 
@@ -209,9 +228,9 @@ function App() {
         </div>
       </header>
 
-      {/* Vitamin D Reminder */}
-      {showVitaminDReminder && (
-        <div className="container mx-auto px-4 pt-4">
+      {/* Reminders */}
+      <div className="container mx-auto px-4 pt-4 space-y-3">
+        {showVitaminDReminder && (
           <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg shadow-md flex items-center justify-between">
             <div className="flex items-center gap-3">
               <i className="fas fa-sun text-3xl text-orange-500"></i>
@@ -228,8 +247,29 @@ function App() {
               <i className="fas fa-times text-xl"></i>
             </button>
           </div>
-        </div>
-      )}
+        )}
+
+        {showTummyTimeReminder && (
+          <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-baby text-3xl text-indigo-500"></i>
+              <div>
+                <p className="font-bold text-indigo-800">Pripomienka: Tummy Time</p>
+                <p className="text-sm text-indigo-700">
+                  Dnes: {tummyTimeCount}/3 | Ešte potrebujete: <span className="font-bold">{3 - tummyTimeCount}x</span>
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowTummyTimeReminder(false)}
+              className="text-indigo-500 hover:text-indigo-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+      </div>
 
       <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">

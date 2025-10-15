@@ -20,6 +20,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
   const [breastfed, setBreastfed] = useState(false);
   const [vomit, setVomit] = useState(false);
   const [vitaminD, setVitaminD] = useState(false);
+  const [tummyTime, setTummyTime] = useState(false);
   const [breastMilkMl, setBreastMilkMl] = useState('');
   const [formulaMl, setFormulaMl] = useState('');
   const [notes, setNotes] = useState('');
@@ -35,6 +36,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
       setBreastfed(editingEntry.breastfed);
       setVomit(editingEntry.vomit);
       setVitaminD(editingEntry.vitaminD);
+      setTummyTime(editingEntry.tummyTime);
       setBreastMilkMl(editingEntry.breastMilkMl > 0 ? String(editingEntry.breastMilkMl) : '');
       setFormulaMl(editingEntry.formulaMl > 0 ? String(editingEntry.formulaMl) : '');
       setNotes(editingEntry.notes);
@@ -54,6 +56,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
         breastfed,
         vomit,
         vitaminD,
+        tummyTime,
         breastMilkMl: Number(breastMilkMl) || 0,
         formulaMl: Number(formulaMl) || 0,
         notes,
@@ -67,6 +70,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
         breastfed,
         vomit,
         vitaminD,
+        tummyTime,
         breastMilkMl: Number(breastMilkMl) || 0,
         formulaMl: Number(formulaMl) || 0,
         notes,
@@ -83,6 +87,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
     setBreastfed(false);
     setVomit(false);
     setVitaminD(false);
+    setTummyTime(false);
     setBreastMilkMl('');
     setFormulaMl('');
     setNotes('');
@@ -136,6 +141,10 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
             <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
                 <input type="checkbox" checked={vitaminD} onChange={(e) => setVitaminD(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-orange-500 focus:ring-orange-400"/>
                 <span className="text-slate-700">Vitamín D</span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
+                <input type="checkbox" checked={tummyTime} onChange={(e) => setTummyTime(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-indigo-500 focus:ring-indigo-400"/>
+                <span className="text-slate-700">Tummy Time</span>
             </label>
         </div>
 
