@@ -23,6 +23,8 @@ function App() {
   const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
   const [showSterilizationReminder, setShowSterilizationReminder] = useState(false);
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
+  const [babyName, setBabyName] = useState<string>('');
+  const [showNameModal, setShowNameModal] = useState(false);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -47,6 +49,24 @@ function App() {
       return `${months} ${monthText}, ${remainingDays} ${dayText}`;
     }
   };
+
+  // Load baby name from localStorage on mount
+  useEffect(() => {
+    const savedName = localStorage.getItem('babyName');
+    if (savedName) {
+      setBabyName(savedName);
+    } else {
+      setBabyName('Markus Drajna');
+      localStorage.setItem('babyName', 'Markus Drajna');
+    }
+  }, []);
+
+  // Update document title when baby name changes
+  useEffect(() => {
+    if (babyName) {
+      document.title = babyName;
+    }
+  }, [babyName]);
 
   // Load entries from Supabase on mount
   useEffect(() => {
@@ -219,6 +239,12 @@ function App() {
     setEditingEntry(null);
   };
 
+  const updateBabyName = (newName: string) => {
+    setBabyName(newName);
+    localStorage.setItem('babyName', newName);
+    setShowNameModal(false);
+  };
+
 
   if (loading) {
     return (
@@ -239,7 +265,16 @@ function App() {
             <div className="flex items-center gap-3">
               <div className="text-4xl">👶</div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-700">Sledovanie kŕmenia Markusíka</h1>
+                <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
+                  {babyName}
+                  <button
+                    onClick={() => setShowNameModal(true)}
+                    className="text-sm text-slate-400 hover:text-teal-500 transition-colors"
+                    title="Zmeniť meno"
+                  >
+                    <i className="fas fa-pen-to-square"></i>
+                  </button>
+                </h1>
                 <p className="text-sm text-slate-500">
                   <i className="fas fa-birthday-cake mr-1"></i>
                   Vek: {calculateAge()}
@@ -316,6 +351,63 @@ function App() {
         </div>
       </header>
 
+      {/* Name Modal */}
+      {showNameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-slate-800">Zmeniť meno bábätka</h2>
+              <button
+                onClick={() => setShowNameModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <i className="fas fa-times text-xl"></i>
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const newName = formData.get('babyName') as string;
+                if (newName.trim()) {
+                  updateBabyName(newName.trim());
+                }
+              }}
+            >
+              <div className="mb-4">
+                <label htmlFor="babyName" className="block text-sm font-medium text-slate-600 mb-2">
+                  Meno bábätka
+                </label>
+                <input
+                  type="text"
+                  id="babyName"
+                  name="babyName"
+                  defaultValue={babyName}
+                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  placeholder="Napr. Markus Drajna"
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-teal-500 text-white py-3 rounded-lg font-semibold hover:bg-teal-600 transition-colors"
+                >
+                  Uložiť
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNameModal(false)}
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+                >
+                  Zrušiť
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Reminders */}
       <div className="container mx-auto px-4 pt-4 space-y-3">
         {showVitaminDReminder && (
@@ -324,7 +416,7 @@ function App() {
               <i className="fas fa-sun text-3xl text-orange-500"></i>
               <div>
                 <p className="font-bold text-orange-800">Pripomienka: Vitamín D</p>
-                <p className="text-sm text-orange-700">Nezabudnite dnes dať Markuskovi vitamín D!</p>
+                <p className="text-sm text-orange-700">Nezabudnite dnes dať {babyName ? `${babyName}` : 'bábätku'} vitamín D!</p>
               </div>
             </div>
             <button
