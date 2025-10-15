@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🧪 Spúšťam testy pred pushom..."
+npm test -- --run
+
+if [ $? -ne 0 ]; then
+  echo "❌ Testy zlyhali! Push bol zrušený."
+  echo "💡 Opravte chyby a skúste znova."
+  exit 1
+fi
+
+echo "✅ Všetky testy prešli! Push pokračuje..."
+
