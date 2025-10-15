@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { registerServiceWorker, setupInstallPrompt, checkStandaloneMode } from './register-sw';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -14,3 +15,8 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Register PWA service worker
+registerServiceWorker();
+setupInstallPrompt();
+checkStandaloneMode();

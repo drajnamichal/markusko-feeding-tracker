@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #14b8a6;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    button {
+      background: linear-gradient(to right, #14b8a6, #0d9488);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .icon-preview {
+      text-align: center;
+    }
+    .icon-preview img {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .icon-preview p {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #666;
+    }
+    .instructions {
+      background: #f0f9ff;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #14b8a6;
+      margin-bottom: 20px;
+    }
+    .instructions h3 {
+      margin-top: 0;
+      color: #14b8a6;
+    }
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📱 Generátor PWA Ikon</h1>
+    <p class="subtitle">Vytvorte si ikony pre vašu mobilnú aplikáciu</p>
+    
+    <div class="instructions">
+      <h3>🎨 Ako vytvoriť ikony:</h3>
+      <ol>
+        <li>Kliknite na tlačidlo "Generate Icons" nižšie</li>
+        <li>Ikony sa automaticky vygenerujú vo všetkých potrebných veľkostiach</li>
+        <li>Pravým klikom na každú ikonu → "Save Image As..."</li>
+        <li>Uložte ikony do tohto adresára: <code>public/icons/</code></li>
+        <li>Pomenujte ich presne podľa zobrazených názvov</li>
+        <li>Alebo použite online nástroj: <a href="https://www.pwabuilder.com/imageGenerator" target="_blank">PWA Builder Image Generator</a></li>
+      </ol>
+    </div>
+
+    <button onclick="generateIcons()">🎨 Generate Icons</button>
+    
+    <div class="preview" id="preview"></div>
+  </div>
+
+  <script>
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+
+    function generateIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Background with gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#14b8a6');
+      gradient.addColorStop(1, '#0d9488');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      const cornerRadius = size * 0.2;
+      ctx.roundRect(0, 0, size, size, cornerRadius);
+      ctx.fill();
+
+      // Baby emoji or icon
+      ctx.font = `${size * 0.5}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('👶', size / 2, size / 2);
+
+      // Text at bottom
+      ctx.font = `bold ${size * 0.12}px Arial`;
+      ctx.fillStyle = 'white';
+      ctx.fillText('Markusík', size / 2, size * 0.85);
+
+      return canvas.toDataURL('image/png');
+    }
+
+    function generateIcons() {
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
+
+      sizes.forEach(size => {
+        const iconUrl = generateIcon(size);
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'icon-preview';
+        iconDiv.innerHTML = `
+          <img src="${iconUrl}" alt="Icon ${size}x${size}" />
+          <p>icon-${size}x${size}.png</p>
+          <a href="${iconUrl}" download="icon-${size}x${size}.png" style="font-size: 12px; color: #14b8a6;">Download</a>
+        `;
+        preview.appendChild(iconDiv);
+      });
+    }
+  </script>
+</body>
+</html>
+

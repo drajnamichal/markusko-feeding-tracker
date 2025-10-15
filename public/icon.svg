@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#14b8a6" rx="100"/>
+  
+  <!-- Baby icon -->
+  <g transform="translate(256, 256)">
+    <!-- Head -->
+    <circle cx="0" cy="-20" r="80" fill="#ffd699"/>
+    
+    <!-- Eyes -->
+    <circle cx="-25" cy="-30" r="8" fill="#000"/>
+    <circle cx="25" cy="-30" r="8" fill="#000"/>
+    
+    <!-- Smile -->
+    <path d="M -30,-5 Q 0,15 30,-5" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+    
+    <!-- Body -->
+    <rect x="-60" y="40" width="120" height="100" fill="#a0d8ef" rx="20"/>
+    
+    <!-- Arms -->
+    <rect x="-90" y="50" width="30" height="60" fill="#ffd699" rx="15"/>
+    <rect x="60" y="50" width="30" height="60" fill="#ffd699" rx="15"/>
+    
+    <!-- Legs -->
+    <rect x="-50" y="130" width="35" height="60" fill="#ffd699" rx="15"/>
+    <rect x="15" y="130" width="35" height="60" fill="#ffd699" rx="15"/>
+  </g>
+  
+  <!-- Text - Optional -->
+  <text x="256" y="480" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle">Markusík</text>
+</svg>
+
