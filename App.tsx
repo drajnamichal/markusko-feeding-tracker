@@ -302,7 +302,7 @@ function App() {
             <div className="flex items-center gap-3">
               <i className="fas fa-flask text-3xl text-cyan-500"></i>
               <div>
-                <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fľaše/odsávačky</p>
+                <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fliašok</p>
                 <p className="text-sm text-cyan-700">
                   {daysSinceLastSterilization >= 999 
                     ? 'Ešte ste nezaznamenali sterilizáciu!' 

@@ -153,7 +153,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
             </label>
             <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
                 <input type="checkbox" checked={sterilization} onChange={(e) => setSterilization(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-cyan-500 focus:ring-cyan-400"/>
-                <span className="text-slate-700">Sterilizácia fľaše/odsávačky</span>
+                <span className="text-slate-700">Sterilizácia fliašok</span>
             </label>
         </div>
 
