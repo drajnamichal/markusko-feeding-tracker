@@ -486,6 +486,7 @@ function App() {
       vitaminD: false,
       tummyTime: true,
       sterilization: false,
+      bathing: false,
       notes: `Tummy Time: ${Math.floor(seconds / 60)} min ${seconds % 60} sek`,
     };
 
