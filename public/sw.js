@@ -1,4 +1,4 @@
-const CACHE_NAME = 'markusik-tracker-v5';
+const CACHE_NAME = 'markusik-tracker-v6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,13 +7,15 @@ const urlsToCache = [
 
 // Install event - cache files
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing new version:', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
+        console.log('[SW] Opened cache:', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
   );
+  // Force the waiting service worker to become the active service worker
   self.skipWaiting();
 });
 
@@ -51,19 +53,32 @@ self.addEventListener('fetch', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating new version:', CACHE_NAME);
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('[SW] New version activated, reloading all clients');
+      // Take control of all pages immediately
+      return self.clients.claim();
+    }).then(() => {
+      // Reload all open tabs to use new version
+      return self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(client => {
+          console.log('[SW] Reloading client:', client.url);
+          client.navigate(client.url);
+        });
+      });
     })
   );
-  self.clients.claim();
 });
 
 // Background sync for offline data
