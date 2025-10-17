@@ -115,6 +115,7 @@ function App() {
   useEffect(() => {
     if (!loading) {
       const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       // Find last sterilization entry
       const sterilizationEntries = entries
@@ -123,7 +124,8 @@ function App() {
 
       if (sterilizationEntries.length > 0) {
         const lastSterilization = sterilizationEntries[0].dateTime;
-        const diffTime = now.getTime() - lastSterilization.getTime();
+        const lastSterilizationDay = new Date(lastSterilization.getFullYear(), lastSterilization.getMonth(), lastSterilization.getDate());
+        const diffTime = today.getTime() - lastSterilizationDay.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
         setDaysSinceLastSterilization(diffDays);
@@ -140,6 +142,7 @@ function App() {
   useEffect(() => {
     if (!loading) {
       const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       // Find last bathing entry
       const bathingEntries = entries
@@ -148,7 +151,8 @@ function App() {
 
       if (bathingEntries.length > 0) {
         const lastBathing = bathingEntries[0].dateTime;
-        const diffTime = now.getTime() - lastBathing.getTime();
+        const lastBathingDay = new Date(lastBathing.getFullYear(), lastBathing.getMonth(), lastBathing.getDate());
+        const diffTime = today.getTime() - lastBathingDay.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
         setDaysSinceLastBathing(diffDays);
