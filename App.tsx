@@ -165,8 +165,8 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Get last bottle feeding and calculate elapsed time
-  const getLastBottleFeeding = () => {
+  // Calculate last bottle feeding and elapsed time
+  const lastBottleFeeding = React.useMemo(() => {
     const bottleFeedings = entries
       .filter(e => e.breastMilkMl > 0 || e.formulaMl > 0)
       .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
@@ -183,7 +183,7 @@ function App() {
       hours,
       minutes,
     };
-  };
+  }, [entries, currentTime]);
 
   const loadBabyProfile = async () => {
     try {
@@ -893,7 +893,7 @@ function App() {
         )}
 
         {/* Last Bottle Feeding Stopwatch */}
-        {!loading && getLastBottleFeeding() && (
+        {!loading && lastBottleFeeding && (
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -902,15 +902,15 @@ function App() {
                   Posledné kŕmenie fľašou
                 </p>
                 <p className="text-4xl font-bold mb-2">
-                  {getLastBottleFeeding()!.hours}h {getLastBottleFeeding()!.minutes}m
+                  {lastBottleFeeding.hours}h {lastBottleFeeding.minutes}m
                 </p>
                 <p className="text-sm opacity-90">
                   <i className="fas fa-clock mr-1"></i>
-                  {getLastBottleFeeding()!.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                  {lastBottleFeeding.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
                   {' | '}
-                  {getLastBottleFeeding()!.entry.breastMilkMl > 0 && `${getLastBottleFeeding()!.entry.breastMilkMl}ml materské`}
-                  {getLastBottleFeeding()!.entry.breastMilkMl > 0 && getLastBottleFeeding()!.entry.formulaMl > 0 && ' + '}
-                  {getLastBottleFeeding()!.entry.formulaMl > 0 && `${getLastBottleFeeding()!.entry.formulaMl}ml umelé`}
+                  {lastBottleFeeding.entry.breastMilkMl > 0 && `${lastBottleFeeding.entry.breastMilkMl}ml materské`}
+                  {lastBottleFeeding.entry.breastMilkMl > 0 && lastBottleFeeding.entry.formulaMl > 0 && ' + '}
+                  {lastBottleFeeding.entry.formulaMl > 0 && `${lastBottleFeeding.entry.formulaMl}ml umelé`}
                 </p>
               </div>
               <div className="text-5xl opacity-80">
