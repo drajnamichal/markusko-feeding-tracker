@@ -1,10 +1,11 @@
 
 import React, { useMemo } from 'react';
-import type { LogEntry } from '../types';
+import type { LogEntry, SleepSession } from '../types';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 interface StatisticsProps {
   entries: LogEntry[];
+  sleepSessions: SleepSession[];
 }
 
 interface DayStats {
@@ -26,7 +27,7 @@ interface ChartData {
   dojčené: number;
 }
 
-const Statistics: React.FC<StatisticsProps> = ({ entries }) => {
+const Statistics: React.FC<StatisticsProps> = ({ entries, sleepSessions }) => {
   const stats = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -41,6 +42,17 @@ const Statistics: React.FC<StatisticsProps> = ({ entries }) => {
     const weekEntries = entries.filter(e => {
       const entryDate = new Date(e.dateTime);
       return entryDate >= weekAgo;
+    });
+
+    // Filter sleep sessions
+    const todaySleeps = sleepSessions.filter(s => {
+      const sleepDate = new Date(s.startTime);
+      return sleepDate >= today && s.endTime !== null;
+    });
+
+    const weekSleeps = sleepSessions.filter(s => {
+      const sleepDate = new Date(s.startTime);
+      return sleepDate >= weekAgo && s.endTime !== null;
     });
 
     const calculateStats = (entries: LogEntry[]) => {
@@ -126,6 +138,32 @@ const Statistics: React.FC<StatisticsProps> = ({ entries }) => {
       { name: 'Umelé mlieko', value: totalFormula, color: '#16a34a' },
     ].filter(item => item.value > 0);
 
+    // Calculate sleep statistics
+    const calculateSleepStats = (sleeps: SleepSession[]) => {
+      const totalMinutes = sleeps.reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+      const count = sleeps.length;
+      const avgMinutes = count > 0 ? totalMinutes / count : 0;
+      const longestMinutes = sleeps.length > 0 
+        ? Math.max(...sleeps.map(s => s.durationMinutes || 0))
+        : 0;
+      
+      return {
+        totalMinutes,
+        count,
+        avgMinutes,
+        longestMinutes,
+        totalHours: Math.floor(totalMinutes / 60),
+        totalMins: totalMinutes % 60,
+        avgHours: Math.floor(avgMinutes / 60),
+        avgMins: Math.floor(avgMinutes % 60),
+        longestHours: Math.floor(longestMinutes / 60),
+        longestMins: longestMinutes % 60,
+      };
+    };
+
+    const todaySleepStats = calculateSleepStats(todaySleeps);
+    const weekSleepStats = calculateSleepStats(weekSleeps);
+
     return {
       today: todayStats,
       week: weekStats,
@@ -134,9 +172,11 @@ const Statistics: React.FC<StatisticsProps> = ({ entries }) => {
       timeSinceLastFeeding,
       lastFeeding,
       chartData,
-      pieData
+      pieData,
+      todaySleep: todaySleepStats,
+      weekSleep: weekSleepStats,
     };
-  }, [entries]);
+  }, [entries, sleepSessions]);
 
   const StatCard: React.FC<{ icon: string; label: string; value: string | number; color: string; subtitle?: string }> = 
     ({ icon, label, value, color, subtitle }) => (
@@ -263,6 +303,76 @@ const Statistics: React.FC<StatisticsProps> = ({ entries }) => {
               color="text-red-500"
             />
           )}
+        </div>
+      </div>
+
+      {/* Sleep Stats - Today */}
+      <div>
+        <h3 className="text-lg font-bold text-slate-700 mb-3 flex items-center">
+          <i className="fas fa-moon mr-2 text-indigo-500"></i>
+          Spánok dnes
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard 
+            icon="fa-bed" 
+            label="Celkový spánok" 
+            value={stats.todaySleep.count > 0 ? `${stats.todaySleep.totalHours}h ${stats.todaySleep.totalMins}m` : '-'}
+            color="text-indigo-500"
+          />
+          <StatCard 
+            icon="fa-moon" 
+            label="Počet spánkov" 
+            value={stats.todaySleep.count}
+            color="text-blue-500"
+          />
+          <StatCard 
+            icon="fa-clock" 
+            label="Priemerné trvanie" 
+            value={stats.todaySleep.count > 0 ? `${stats.todaySleep.avgHours}h ${stats.todaySleep.avgMins}m` : '-'}
+            color="text-purple-500"
+          />
+          <StatCard 
+            icon="fa-crown" 
+            label="Najdlhší spánok" 
+            value={stats.todaySleep.longestMinutes > 0 ? `${stats.todaySleep.longestHours}h ${stats.todaySleep.longestMins}m` : '-'}
+            color="text-amber-500"
+          />
+        </div>
+      </div>
+
+      {/* Sleep Stats - Week */}
+      <div>
+        <h3 className="text-lg font-bold text-slate-700 mb-3 flex items-center">
+          <i className="fas fa-calendar-week mr-2 text-indigo-500"></i>
+          Spánok za týždeň
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard 
+            icon="fa-bed" 
+            label="Celkový spánok" 
+            value={stats.weekSleep.count > 0 ? `${stats.weekSleep.totalHours}h ${stats.weekSleep.totalMins}m` : '-'}
+            subtitle={stats.weekSleep.count > 0 ? `${(stats.weekSleep.totalMinutes / 7 / 60).toFixed(1)}h / deň` : undefined}
+            color="text-indigo-500"
+          />
+          <StatCard 
+            icon="fa-moon" 
+            label="Počet spánkov" 
+            value={stats.weekSleep.count}
+            subtitle={stats.weekSleep.count > 0 ? `${(stats.weekSleep.count / 7).toFixed(1)} / deň` : undefined}
+            color="text-blue-500"
+          />
+          <StatCard 
+            icon="fa-clock" 
+            label="Priemerné trvanie" 
+            value={stats.weekSleep.count > 0 ? `${stats.weekSleep.avgHours}h ${stats.weekSleep.avgMins}m` : '-'}
+            color="text-purple-500"
+          />
+          <StatCard 
+            icon="fa-crown" 
+            label="Najdlhší spánok" 
+            value={stats.weekSleep.longestMinutes > 0 ? `${stats.weekSleep.longestHours}h ${stats.weekSleep.longestMins}m` : '-'}
+            color="text-amber-500"
+          />
         </div>
       </div>
 

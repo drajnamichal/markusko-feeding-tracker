@@ -1026,7 +1026,7 @@ function App() {
           ) : showWhiteNoise ? (
             <WhiteNoise />
           ) : showStats ? (
-            <Statistics entries={entries} />
+            <Statistics entries={entries} sleepSessions={sleepSessions} />
           ) : (
             <LogList 
               entries={entries} 
