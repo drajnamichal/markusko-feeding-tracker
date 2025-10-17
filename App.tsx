@@ -44,6 +44,7 @@ function App() {
   const [feedingNotificationsEnabled, setFeedingNotificationsEnabled] = useState(() => {
     return localStorage.getItem('feedingNotificationsEnabled') === 'true';
   });
+  const [showMenu, setShowMenu] = useState(false);
 
   // Request notification permission
   const requestNotificationPermission = async () => {
@@ -578,115 +579,148 @@ function App() {
                 </p>
               </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="relative">
               <button
-                onClick={() => {
-                  if (notificationPermission === 'granted') {
-                    const newState = !feedingNotificationsEnabled;
-                    setFeedingNotificationsEnabled(newState);
-                    localStorage.setItem('feedingNotificationsEnabled', String(newState));
-                  } else {
-                    requestNotificationPermission();
-                  }
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  feedingNotificationsEnabled 
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600' 
-                    : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                }`}
-                title={feedingNotificationsEnabled ? 'Notifikácie zapnuté' : 'Zapnúť notifikácie kŕmenia'}
+                onClick={() => setShowMenu(!showMenu)}
+                className="px-4 py-2 rounded-lg font-medium transition-all bg-teal-500 text-white hover:bg-teal-600"
+                title="Menu"
               >
-                <i className={`fas ${feedingNotificationsEnabled ? 'fa-bell' : 'fa-bell-slash'} mr-2`}></i>
-                {feedingNotificationsEnabled ? 'Notifikácie ON' : 'Notifikácie OFF'}
+                <i className={`fas ${showMenu ? 'fa-times' : 'fa-bars'} text-xl`}></i>
               </button>
-              <button
-                onClick={() => setShowMeasurementModal(true)}
-                className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600"
-                title="Zaznamenať miery"
-              >
-                <i className="fas fa-ruler-combined mr-2"></i>
-                Zaznamenať miery
-              </button>
-              <button
-                onClick={() => setShowTummyTimeStopwatch(true)}
-                className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
-                title="Tummy Time stopky"
-              >
-                <i className="fas fa-stopwatch mr-2"></i>
-                Tummy Time
-              </button>
-              <button
-                onClick={() => setShowSleepTracker(true)}
-                className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600"
-                title="Sledovanie spánku"
-              >
-                <i className="fas fa-moon mr-2"></i>
-                Spánok
-              </button>
-              <button
-                onClick={() => {
-                  setShowStats(!showStats);
-                  setShowWhiteNoise(false);
-                  setShowWHO(false);
-                  setShowDevelopment(false);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  showStats 
-                    ? 'bg-teal-500 text-white hover:bg-teal-600' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <i className={`fas ${showStats ? 'fa-list' : 'fa-chart-bar'} mr-2`}></i>
-                {showStats ? 'Záznamy' : 'Štatistiky'}
-              </button>
-              <button
-                onClick={() => {
-                  setShowWHO(!showWHO);
-                  setShowStats(false);
-                  setShowWhiteNoise(false);
-                  setShowDevelopment(false);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  showWHO 
-                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <i className={`fas ${showWHO ? 'fa-list' : 'fa-stethoscope'} mr-2`}></i>
-                {showWHO ? 'Záznamy' : 'WHO'}
-              </button>
-              <button
-                onClick={() => {
-                  setShowDevelopment(!showDevelopment);
-                  setShowStats(false);
-                  setShowWhiteNoise(false);
-                  setShowWHO(false);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  showDevelopment 
-                    ? 'bg-green-500 text-white hover:bg-green-600' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <i className={`fas ${showDevelopment ? 'fa-list' : 'fa-baby-carriage'} mr-2`}></i>
-                {showDevelopment ? 'Záznamy' : 'Cvičenia'}
-              </button>
-              <button
-                onClick={() => {
-                  setShowWhiteNoise(!showWhiteNoise);
-                  setShowStats(false);
-                  setShowWHO(false);
-                  setShowDevelopment(false);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  showWhiteNoise 
-                    ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <i className={`fas ${showWhiteNoise ? 'fa-list' : 'fa-music'} mr-2`}></i>
-                {showWhiteNoise ? 'Záznamy' : 'White Noise'}
-              </button>
+              
+              {/* Dropdown Menu */}
+              {showMenu && (
+                <>
+                  {/* Backdrop */}
+                  <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 z-40"
+                    onClick={() => setShowMenu(false)}
+                  ></div>
+                  
+                  {/* Menu Panel */}
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <div className="py-2">
+                      {/* Notifications Button */}
+                      <button
+                        onClick={() => {
+                          if (notificationPermission === 'granted') {
+                            const newState = !feedingNotificationsEnabled;
+                            setFeedingNotificationsEnabled(newState);
+                            localStorage.setItem('feedingNotificationsEnabled', String(newState));
+                          } else {
+                            requestNotificationPermission();
+                          }
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3"
+                      >
+                        <i className={`fas ${feedingNotificationsEnabled ? 'fa-bell' : 'fa-bell-slash'} text-lg ${feedingNotificationsEnabled ? 'text-amber-500' : 'text-slate-400'}`}></i>
+                        <span className="text-slate-700 font-medium">{feedingNotificationsEnabled ? 'Notifikácie ON' : 'Notifikácie OFF'}</span>
+                      </button>
+                      
+                      <div className="border-t border-slate-100 my-1"></div>
+                      
+                      {/* Measurement Button */}
+                      <button
+                        onClick={() => {
+                          setShowMeasurementModal(true);
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3"
+                      >
+                        <i className="fas fa-ruler-combined text-lg text-pink-500"></i>
+                        <span className="text-slate-700 font-medium">Zaznamenať miery</span>
+                      </button>
+                      
+                      {/* Tummy Time Button */}
+                      <button
+                        onClick={() => {
+                          setShowTummyTimeStopwatch(true);
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3"
+                      >
+                        <i className="fas fa-stopwatch text-lg text-indigo-500"></i>
+                        <span className="text-slate-700 font-medium">Tummy Time</span>
+                      </button>
+                      
+                      {/* Sleep Button */}
+                      <button
+                        onClick={() => {
+                          setShowSleepTracker(true);
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3"
+                      >
+                        <i className="fas fa-moon text-lg text-blue-500"></i>
+                        <span className="text-slate-700 font-medium">Spánok</span>
+                      </button>
+                      
+                      <div className="border-t border-slate-100 my-1"></div>
+                      
+                      {/* Statistics Button */}
+                      <button
+                        onClick={() => {
+                          setShowStats(!showStats);
+                          setShowWhiteNoise(false);
+                          setShowWHO(false);
+                          setShowDevelopment(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showStats ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-chart-bar text-lg ${showStats ? 'text-teal-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showStats ? 'text-teal-600' : 'text-slate-700'}`}>Štatistiky</span>
+                      </button>
+                      
+                      {/* WHO Button */}
+                      <button
+                        onClick={() => {
+                          setShowWHO(!showWHO);
+                          setShowStats(false);
+                          setShowWhiteNoise(false);
+                          setShowDevelopment(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWHO ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-stethoscope text-lg ${showWHO ? 'text-blue-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showWHO ? 'text-blue-600' : 'text-slate-700'}`}>WHO</span>
+                      </button>
+                      
+                      {/* Development Button */}
+                      <button
+                        onClick={() => {
+                          setShowDevelopment(!showDevelopment);
+                          setShowStats(false);
+                          setShowWhiteNoise(false);
+                          setShowWHO(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showDevelopment ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-baby-carriage text-lg ${showDevelopment ? 'text-green-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showDevelopment ? 'text-green-600' : 'text-slate-700'}`}>Cvičenia</span>
+                      </button>
+                      
+                      {/* White Noise Button */}
+                      <button
+                        onClick={() => {
+                          setShowWhiteNoise(!showWhiteNoise);
+                          setShowStats(false);
+                          setShowWHO(false);
+                          setShowDevelopment(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWhiteNoise ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-music text-lg ${showWhiteNoise ? 'text-purple-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showWhiteNoise ? 'text-purple-600' : 'text-slate-700'}`}>White Noise</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
