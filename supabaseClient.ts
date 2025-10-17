@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { LogEntry, BabyProfile, Measurement } from './types';
+import type { LogEntry, BabyProfile, Measurement, SleepSession } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -127,5 +127,39 @@ export const dbToMeasurement = (dbMeasurement: MeasurementDB): Measurement => ({
   notes: dbMeasurement.notes,
   createdAt: new Date(dbMeasurement.created_at),
   updatedAt: new Date(dbMeasurement.updated_at),
+});
+
+// Database types for SleepSession
+export interface SleepSessionDB {
+  id: string;
+  baby_profile_id: string;
+  start_time: string;
+  end_time: string | null;
+  duration_minutes: number | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Convert SleepSession to database format
+export const sleepSessionToDB = (session: SleepSession): Omit<SleepSessionDB, 'created_at' | 'updated_at'> => ({
+  id: session.id,
+  baby_profile_id: session.babyProfileId,
+  start_time: session.startTime.toISOString(),
+  end_time: session.endTime ? session.endTime.toISOString() : null,
+  duration_minutes: session.durationMinutes,
+  notes: session.notes || '',
+});
+
+// Convert database format to SleepSession
+export const dbToSleepSession = (dbSession: SleepSessionDB): SleepSession => ({
+  id: dbSession.id,
+  babyProfileId: dbSession.baby_profile_id,
+  startTime: new Date(dbSession.start_time),
+  endTime: dbSession.end_time ? new Date(dbSession.end_time) : null,
+  durationMinutes: dbSession.duration_minutes,
+  notes: dbSession.notes,
+  createdAt: new Date(dbSession.created_at),
+  updatedAt: new Date(dbSession.updated_at),
 });
 

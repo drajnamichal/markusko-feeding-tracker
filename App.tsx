@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import type { LogEntry, BabyProfile, Measurement } from './types';
+import type { LogEntry, BabyProfile, Measurement, SleepSession } from './types';
 import { INITIAL_ENTRIES } from './constants';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
@@ -9,7 +9,8 @@ import WhiteNoise from './components/WhiteNoise';
 import WHOGuidelines from './components/WHOGuidelines';
 import DevelopmentGuide from './components/DevelopmentGuide';
 import TummyTimeStopwatch from './components/TummyTimeStopwatch';
-import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, type BabyProfileDB, type MeasurementDB } from './supabaseClient';
+import SleepTracker from './components/SleepTracker';
+import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
   const [entries, setEntries] = useState<LogEntry[]>([]);
@@ -37,6 +38,8 @@ function App() {
     hours: number;
     minutes: number;
   } | null>(null);
+  const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([]);
+  const [showSleepTracker, setShowSleepTracker] = useState(false);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -75,6 +78,7 @@ function App() {
     if (babyProfile) {
       document.title = babyProfile.name;
       loadMeasurements();
+      loadSleepSessions();
     }
   }, [babyProfile]);
 
@@ -417,6 +421,57 @@ function App() {
     await addEntry(newEntry);
   };
 
+  const loadSleepSessions = async () => {
+    if (!babyProfile) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('sleep_sessions')
+        .select('*')
+        .eq('baby_profile_id', babyProfile.id)
+        .order('start_time', { ascending: false });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const sessions = data.map(dbToSleepSession);
+        setSleepSessions(sessions);
+      }
+    } catch (error) {
+      console.error('Error loading sleep sessions:', error);
+    }
+  };
+
+  const saveSleepSession = async (startTime: Date, endTime: Date, durationMinutes: number) => {
+    if (!babyProfile) return;
+
+    const newSession: SleepSession = {
+      id: new Date().toISOString() + Math.random(),
+      babyProfileId: babyProfile.id,
+      startTime: startTime,
+      endTime: endTime,
+      durationMinutes: durationMinutes,
+      notes: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    try {
+      const dbSession = sleepSessionToDB(newSession);
+      const { error } = await supabase
+        .from('sleep_sessions')
+        .insert([dbSession]);
+
+      if (error) throw error;
+
+      setSleepSessions(prev => [newSession, ...prev]);
+      setShowSleepTracker(false);
+    } catch (error) {
+      console.error('Error saving sleep session:', error);
+      alert('Chyba pri ukladaní spánku');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -469,6 +524,14 @@ function App() {
               >
                 <i className="fas fa-stopwatch mr-2"></i>
                 Tummy Time
+              </button>
+              <button
+                onClick={() => setShowSleepTracker(true)}
+                className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600"
+                title="Sledovanie spánku"
+              >
+                <i className="fas fa-moon mr-2"></i>
+                Spánok
               </button>
               <button
                 onClick={() => {
@@ -812,6 +875,14 @@ function App() {
         <TummyTimeStopwatch
           onClose={() => setShowTummyTimeStopwatch(false)}
           onSave={saveTummyTime}
+        />
+      )}
+
+      {showSleepTracker && (
+        <SleepTracker
+          onClose={() => setShowSleepTracker(false)}
+          onSave={saveSleepSession}
+          recentSleeps={sleepSessions}
         />
       )}
 

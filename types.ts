@@ -35,3 +35,14 @@ export interface Measurement {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface SleepSession {
+  id: string;
+  babyProfileId: string;
+  startTime: Date;
+  endTime: Date | null;
+  durationMinutes: number | null;
+  notes: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
