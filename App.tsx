@@ -893,7 +893,7 @@ function App() {
         )}
 
         {/* Last Bottle Feeding Stopwatch */}
-        {!loading && lastBottleFeeding && (
+        {lastBottleFeeding && (
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex-1">
