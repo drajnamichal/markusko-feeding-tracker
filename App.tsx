@@ -40,6 +40,41 @@ function App() {
   } | null>(null);
   const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([]);
   const [showSleepTracker, setShowSleepTracker] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const [feedingNotificationsEnabled, setFeedingNotificationsEnabled] = useState(() => {
+    return localStorage.getItem('feedingNotificationsEnabled') === 'true';
+  });
+
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if (permission === 'granted') {
+        setFeedingNotificationsEnabled(true);
+        localStorage.setItem('feedingNotificationsEnabled', 'true');
+      }
+    }
+  };
+
+  // Send notification
+  const sendFeedingNotification = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification('⏰ Čas na kŕmenie!', {
+        body: 'Už 3 hodiny od posledného kŕmenia',
+        icon: '/icons/192.png',
+        badge: '/icons/72.png',
+        tag: 'feeding-reminder',
+        renotify: true,
+        requireInteraction: true,
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  };
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -81,6 +116,41 @@ function App() {
       loadSleepSessions();
     }
   }, [babyProfile]);
+
+  // Initialize notification permission state
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  // Check for feeding reminder every minute
+  useEffect(() => {
+    if (!feedingNotificationsEnabled || !entries.length) return;
+
+    const checkFeedingTime = () => {
+      const now = new Date();
+      const feedings = entries
+        .filter(e => e.breastfed || e.breastMilkMl > 0 || e.formulaMl > 0)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (feedings.length > 0) {
+        const lastFeeding = feedings[0];
+        const hoursSinceLastFeeding = (now.getTime() - lastFeeding.dateTime.getTime()) / (1000 * 60 * 60);
+
+        // Send notification if 3 hours have passed
+        if (hoursSinceLastFeeding >= 3 && hoursSinceLastFeeding < 3.02) { // Small window to avoid multiple notifications
+          sendFeedingNotification();
+        }
+      }
+    };
+
+    // Check immediately and then every minute
+    checkFeedingTime();
+    const interval = setInterval(checkFeedingTime, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [entries, feedingNotificationsEnabled]);
 
   // Check for vitamin D reminder
   useEffect(() => {
@@ -509,6 +579,26 @@ function App() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => {
+                  if (notificationPermission === 'granted') {
+                    const newState = !feedingNotificationsEnabled;
+                    setFeedingNotificationsEnabled(newState);
+                    localStorage.setItem('feedingNotificationsEnabled', String(newState));
+                  } else {
+                    requestNotificationPermission();
+                  }
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  feedingNotificationsEnabled 
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600' 
+                    : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                }`}
+                title={feedingNotificationsEnabled ? 'Notifikácie zapnuté' : 'Zapnúť notifikácie kŕmenia'}
+              >
+                <i className={`fas ${feedingNotificationsEnabled ? 'fa-bell' : 'fa-bell-slash'} mr-2`}></i>
+                {feedingNotificationsEnabled ? 'Notifikácie ON' : 'Notifikácie OFF'}
+              </button>
               <button
                 onClick={() => setShowMeasurementModal(true)}
                 className="px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600"
