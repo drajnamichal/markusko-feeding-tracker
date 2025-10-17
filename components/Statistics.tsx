@@ -134,8 +134,8 @@ const Statistics: React.FC<StatisticsProps> = ({ entries, sleepSessions }) => {
     const totalFormula = weekEntries.reduce((sum, e) => sum + e.formulaMl, 0);
     
     const pieData = [
-      { name: 'Materské mlieko', value: totalBreastMilk, color: '#a855f7' },
-      { name: 'Umelé mlieko', value: totalFormula, color: '#16a34a' },
+      { name: 'Materské', value: totalBreastMilk, color: '#a855f7' },
+      { name: 'Umelé', value: totalFormula, color: '#16a34a' },
     ].filter(item => item.value > 0);
 
     // Calculate sleep statistics
