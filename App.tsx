@@ -32,6 +32,11 @@ function App() {
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [showTummyTimeStopwatch, setShowTummyTimeStopwatch] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [lastBottleFeedingData, setLastBottleFeedingData] = useState<{
+    entry: LogEntry;
+    hours: number;
+    minutes: number;
+  } | null>(null);
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -166,24 +171,28 @@ function App() {
   }, []);
 
   // Calculate last bottle feeding and elapsed time
-  const lastBottleFeeding = React.useMemo(() => {
-    const bottleFeedings = entries
-      .filter(e => e.breastMilkMl > 0 || e.formulaMl > 0)
-      .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+  useEffect(() => {
+    if (!loading && entries.length > 0) {
+      const bottleFeedings = entries
+        .filter(e => e.breastMilkMl > 0 || e.formulaMl > 0)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
 
-    if (bottleFeedings.length === 0) return null;
+      if (bottleFeedings.length > 0) {
+        const lastFeeding = bottleFeedings[0];
+        const diff = currentTime.getTime() - lastFeeding.dateTime.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    const lastFeeding = bottleFeedings[0];
-    const diff = currentTime.getTime() - lastFeeding.dateTime.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    return {
-      entry: lastFeeding,
-      hours,
-      minutes,
-    };
-  }, [entries, currentTime]);
+        setLastBottleFeedingData({
+          entry: lastFeeding,
+          hours,
+          minutes,
+        });
+      } else {
+        setLastBottleFeedingData(null);
+      }
+    }
+  }, [entries, currentTime, loading]);
 
   const loadBabyProfile = async () => {
     try {
@@ -893,7 +902,7 @@ function App() {
         )}
 
         {/* Last Bottle Feeding Stopwatch */}
-        {lastBottleFeeding && (
+        {lastBottleFeedingData && (
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -902,15 +911,15 @@ function App() {
                   Posledné kŕmenie fľašou
                 </p>
                 <p className="text-4xl font-bold mb-2">
-                  {lastBottleFeeding.hours}h {lastBottleFeeding.minutes}m
+                  {lastBottleFeedingData.hours}h {lastBottleFeedingData.minutes}m
                 </p>
                 <p className="text-sm opacity-90">
                   <i className="fas fa-clock mr-1"></i>
-                  {lastBottleFeeding.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                  {lastBottleFeedingData.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
                   {' | '}
-                  {lastBottleFeeding.entry.breastMilkMl > 0 && `${lastBottleFeeding.entry.breastMilkMl}ml materské`}
-                  {lastBottleFeeding.entry.breastMilkMl > 0 && lastBottleFeeding.entry.formulaMl > 0 && ' + '}
-                  {lastBottleFeeding.entry.formulaMl > 0 && `${lastBottleFeeding.entry.formulaMl}ml umelé`}
+                  {lastBottleFeedingData.entry.breastMilkMl > 0 && `${lastBottleFeedingData.entry.breastMilkMl}ml materské`}
+                  {lastBottleFeedingData.entry.breastMilkMl > 0 && lastBottleFeedingData.entry.formulaMl > 0 && ' + '}
+                  {lastBottleFeedingData.entry.formulaMl > 0 && `${lastBottleFeedingData.entry.formulaMl}ml umelé`}
                 </p>
               </div>
               <div className="text-5xl opacity-80">
