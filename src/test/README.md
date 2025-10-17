@@ -50,20 +50,47 @@ Testuje výpočet veku bábätka:
 - **@testing-library/jest-dom** - dodatočné matchery pre DOM
 - **jsdom** - simulácia browsera v Node.js
 
+### `sleepTracking.test.ts`
+Testuje sledovanie spánku:
+- **SleepSession** konverzie (sleepSessionToDB, dbToSleepSession)
+- **Trvanie spánku** - výpočet minút, hodín
+- **Štatistiky spánku** - celkový čas, priemer, najdlhší spánok
+- **Prebiehajúce vs. ukončené** spánky
+
+### `reminders.test.ts`
+Testuje logiku pripomienok:
+- **Vitamín D** - denná pripomienka
+- **Tummy Time** - 3x denne
+- **Sterilizácia** - každé 2 dni
+- **Kúpanie** - každé 2 dni
+- **Dátumové výpočty** - dni od poslednej aktivity
+
+### `feedingTime.test.ts`
+Testuje výpočty kŕmenia:
+- **Posledné kŕmenie** - vyhľadanie najnovšieho
+- **Čas od kŕmenia** - hodiny a minúty
+- **Ďalšie kŕmenie** - výpočet času + 3h
+- **Priemerný interval** - medzi kŕmeniami
+- **Notifikácie** - presne po 3 hodinách
+- **Detekcia fľašového kŕmenia**
+
 ## Štatistiky testov
 
 ```
-✓ 35 testov passed
-✓ 3 test suites
+✓ 72 testov passed
+✓ 6 test suites
 ✓ 100% pass rate
 ```
 
 ### Pokrytie:
-- ✅ Data conversion functions (supabaseClient)
+- ✅ Data conversion functions (supabaseClient, sleep sessions)
 - ✅ Statistics calculations
 - ✅ Age calculation with Slovak grammar
 - ✅ Date filtering
 - ✅ Activity counts
+- ✅ Sleep tracking and statistics
+- ✅ Reminders logic (Vitamin D, Tummy Time, Sterilization, Bathing)
+- ✅ Feeding time calculations and notifications
 
 ## Pridanie nových testov
 
