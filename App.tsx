@@ -823,7 +823,7 @@ function App() {
               <i className="fas fa-sun text-3xl text-orange-500"></i>
               <div>
                 <p className="font-bold text-orange-800">Pripomienka: Vitamín D</p>
-                <p className="text-sm text-orange-700">Nezabudnite dnes dať {babyProfile?.name || 'bábätku'} vitamín D!</p>
+                <p className="text-sm text-orange-700">Nezabudnite dnes podať vitamín D!</p>
               </div>
             </div>
             <button
