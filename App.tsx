@@ -138,7 +138,7 @@ function App() {
     }
   }, [entries, loading]);
 
-  // Check for bathing reminder (every 2 days)
+  // Check for bathing reminder (every 3 days)
   useEffect(() => {
     if (!loading) {
       const now = new Date();
@@ -156,7 +156,7 @@ function App() {
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
         setDaysSinceLastBathing(diffDays);
-        setShowBathingReminder(diffDays >= 2);
+        setShowBathingReminder(diffDays >= 3);
       } else {
         // No bathing recorded yet - show reminder
         setDaysSinceLastBathing(999);
