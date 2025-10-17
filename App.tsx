@@ -155,10 +155,16 @@ function App() {
         const diffTime = today.getTime() - lastBathingDay.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
+        console.log('🛁 Bathing reminder check:');
+        console.log('  Today:', today.toLocaleDateString('sk-SK'));
+        console.log('  Last bathing:', lastBathingDay.toLocaleDateString('sk-SK'));
+        console.log('  Days since:', diffDays);
+        console.log('  Should show reminder:', diffDays >= 2);
+        
         setDaysSinceLastBathing(diffDays);
         setShowBathingReminder(diffDays >= 2);
       } else {
-        // No bathing recorded yet - show reminder
+        console.log('🛁 No bathing recorded yet - showing reminder');
         setDaysSinceLastBathing(999);
         setShowBathingReminder(true);
       }
