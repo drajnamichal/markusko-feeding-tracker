@@ -31,6 +31,7 @@ function App() {
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [showTummyTimeStopwatch, setShowTummyTimeStopwatch] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Calculate baby's age
   const calculateAge = () => {
@@ -154,6 +155,35 @@ function App() {
       }
     }
   }, [entries, loading]);
+
+  // Update current time every minute for live stopwatch
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Get last bottle feeding and calculate elapsed time
+  const getLastBottleFeeding = () => {
+    const bottleFeedings = entries
+      .filter(e => e.breastMilkMl > 0 || e.formulaMl > 0)
+      .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+    if (bottleFeedings.length === 0) return null;
+
+    const lastFeeding = bottleFeedings[0];
+    const diff = currentTime.getTime() - lastFeeding.dateTime.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    return {
+      entry: lastFeeding,
+      hours,
+      minutes,
+    };
+  };
 
   const loadBabyProfile = async () => {
     try {
@@ -859,6 +889,34 @@ function App() {
             >
               <i className="fas fa-times text-xl"></i>
             </button>
+          </div>
+        )}
+
+        {/* Last Bottle Feeding Stopwatch */}
+        {!loading && getLastBottleFeeding() && (
+          <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm opacity-90 mb-1">
+                  <i className="fas fa-bottle-baby mr-2"></i>
+                  Posledné kŕmenie fľašou
+                </p>
+                <p className="text-4xl font-bold mb-2">
+                  {getLastBottleFeeding()!.hours}h {getLastBottleFeeding()!.minutes}m
+                </p>
+                <p className="text-sm opacity-90">
+                  <i className="fas fa-clock mr-1"></i>
+                  {getLastBottleFeeding()!.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                  {' | '}
+                  {getLastBottleFeeding()!.entry.breastMilkMl > 0 && `${getLastBottleFeeding()!.entry.breastMilkMl}ml materské`}
+                  {getLastBottleFeeding()!.entry.breastMilkMl > 0 && getLastBottleFeeding()!.entry.formulaMl > 0 && ' + '}
+                  {getLastBottleFeeding()!.entry.formulaMl > 0 && `${getLastBottleFeeding()!.entry.formulaMl}ml umelé`}
+                </p>
+              </div>
+              <div className="text-5xl opacity-80">
+                <i className="fas fa-stopwatch"></i>
+              </div>
+            </div>
           </div>
         )}
       </div>
