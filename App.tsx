@@ -906,32 +906,41 @@ function App() {
         )}
 
         {/* Last Bottle Feeding Stopwatch */}
-        {lastBottleFeedingData && (
-          <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm opacity-90 mb-1">
-                  <i className="fas fa-bottle-baby mr-2"></i>
-                  Posledné kŕmenie fľašou
-                </p>
-                <p className="text-4xl font-bold mb-2">
-                  {lastBottleFeedingData.hours}h {lastBottleFeedingData.minutes}m
-                </p>
-                <p className="text-sm opacity-90">
-                  <i className="fas fa-clock mr-1"></i>
-                  {lastBottleFeedingData.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
-                  {' | '}
-                  {lastBottleFeedingData.entry.breastMilkMl > 0 && `${lastBottleFeedingData.entry.breastMilkMl}ml materské`}
-                  {lastBottleFeedingData.entry.breastMilkMl > 0 && lastBottleFeedingData.entry.formulaMl > 0 && ' + '}
-                  {lastBottleFeedingData.entry.formulaMl > 0 && `${lastBottleFeedingData.entry.formulaMl}ml umelé`}
-                </p>
-              </div>
-              <div className="text-5xl opacity-80">
-                <i className="fas fa-stopwatch"></i>
+        {lastBottleFeedingData && (() => {
+          const nextFeedingTime = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (3 * 60 * 60 * 1000));
+          return (
+            <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm opacity-90 mb-1">
+                    <i className="fas fa-bottle-baby mr-2"></i>
+                    Posledné kŕmenie fľašou
+                  </p>
+                  <p className="text-4xl font-bold mb-2">
+                    {lastBottleFeedingData.hours}h {lastBottleFeedingData.minutes}m
+                  </p>
+                  <p className="text-sm opacity-90 mb-2">
+                    <i className="fas fa-clock mr-1"></i>
+                    {lastBottleFeedingData.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                    {' | '}
+                    {lastBottleFeedingData.entry.breastMilkMl > 0 && `${lastBottleFeedingData.entry.breastMilkMl}ml materské`}
+                    {lastBottleFeedingData.entry.breastMilkMl > 0 && lastBottleFeedingData.entry.formulaMl > 0 && ' + '}
+                    {lastBottleFeedingData.entry.formulaMl > 0 && `${lastBottleFeedingData.entry.formulaMl}ml umelé`}
+                  </p>
+                  <div className="border-t border-white/20 pt-2 mt-2">
+                    <p className="text-sm opacity-90">
+                      <i className="fas fa-clock mr-1"></i>
+                      <span className="font-semibold">Nasledujúce kŕmenie:</span> {nextFeedingTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-5xl opacity-80">
+                  <i className="fas fa-stopwatch"></i>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
