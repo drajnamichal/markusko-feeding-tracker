@@ -162,7 +162,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
             </label>
             <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
                 <input type="checkbox" checked={bathing} onChange={(e) => setBathing(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-blue-500 focus:ring-blue-400"/>
-                <span className="text-slate-700">🛁 Kúpanie</span>
+                <span className="text-slate-700">Kúpanie</span>
             </label>
         </div>
 
