@@ -422,15 +422,15 @@ function App() {
     }
   };
 
-  const addMeasurement = async (weightGrams: number, heightCm: number, notes: string) => {
+  const addMeasurement = async (weightGrams: number, heightCm: number | null, notes: string) => {
     if (!babyProfile) return;
 
     const newMeasurement: Measurement = {
       id: new Date().toISOString() + Math.random(),
       babyProfileId: babyProfile.id,
       measuredAt: new Date(),
-      weightGrams: weightGrams,
-      heightCm: heightCm,
+      weightGrams: weightGrams || 0,
+      heightCm: heightCm || 0,
       notes: notes,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -881,19 +881,23 @@ function App() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const weightGrams = parseInt(formData.get('weightGrams') as string);
-                const heightCm = parseFloat(formData.get('heightCm') as string);
+                const weightGramsStr = formData.get('weightGrams') as string;
+                const heightCmStr = formData.get('heightCm') as string;
+                const weightGrams = weightGramsStr ? parseInt(weightGramsStr) : 0;
+                const heightCm = heightCmStr ? parseFloat(heightCmStr) : null;
                 const notes = (formData.get('notes') as string) || '';
                 
-                if (weightGrams && heightCm) {
+                if (weightGrams > 0 || (heightCm && heightCm > 0)) {
                   addMeasurement(weightGrams, heightCm, notes);
+                } else {
+                  alert('Zadajte aspoň váhu alebo výšku');
                 }
               }}
             >
               <div className="space-y-4">
                 <div>
                   <label htmlFor="weightGrams" className="block text-sm font-medium text-slate-600 mb-2">
-                    <i className="fas fa-weight mr-2 text-pink-500"></i>Váha (g)
+                    <i className="fas fa-weight mr-2 text-pink-500"></i>Váha (g) <span className="text-xs text-slate-400">(voliteľné)</span>
                   </label>
                   <input
                     type="number"
@@ -902,7 +906,6 @@ function App() {
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     placeholder="Napr. 3500"
                     min="0"
-                    required
                     autoFocus
                   />
                   <p className="text-xs text-slate-500 mt-1">Pri narodení: {babyProfile.birthWeightGrams}g</p>
@@ -910,7 +913,7 @@ function App() {
                 
                 <div>
                   <label htmlFor="heightCm" className="block text-sm font-medium text-slate-600 mb-2">
-                    <i className="fas fa-ruler-vertical mr-2 text-pink-500"></i>Výška (cm)
+                    <i className="fas fa-ruler-vertical mr-2 text-pink-500"></i>Výška (cm) <span className="text-xs text-slate-400">(voliteľné)</span>
                   </label>
                   <input
                     type="number"
@@ -920,7 +923,6 @@ function App() {
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     placeholder="Napr. 52.5"
                     min="0"
-                    required
                   />
                   <p className="text-xs text-slate-500 mt-1">Pri narodení: {babyProfile.birthHeightCm}cm</p>
                 </div>
@@ -974,14 +976,18 @@ function App() {
                         </span>
                       </div>
                       <div className="flex gap-4 text-slate-600">
-                        <span>
-                          <i className="fas fa-weight text-pink-500 mr-1"></i>
-                          {measurement.weightGrams}g
-                        </span>
-                        <span>
-                          <i className="fas fa-ruler-vertical text-pink-500 mr-1"></i>
-                          {measurement.heightCm}cm
-                        </span>
+                        {measurement.weightGrams > 0 && (
+                          <span>
+                            <i className="fas fa-weight text-pink-500 mr-1"></i>
+                            {measurement.weightGrams}g
+                          </span>
+                        )}
+                        {measurement.heightCm > 0 && (
+                          <span>
+                            <i className="fas fa-ruler-vertical text-pink-500 mr-1"></i>
+                            {measurement.heightCm}cm
+                          </span>
+                        )}
                       </div>
                       {measurement.notes && (
                         <p className="text-xs text-slate-500 mt-1 italic">{measurement.notes}</p>
