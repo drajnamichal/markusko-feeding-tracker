@@ -10,6 +10,7 @@ import WHOGuidelines from './components/WHOGuidelines';
 import DevelopmentGuide from './components/DevelopmentGuide';
 import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
+import FormulaGuide from './components/FormulaGuide';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
   const [showWhiteNoise, setShowWhiteNoise] = useState(false);
   const [showWHO, setShowWHO] = useState(false);
   const [showDevelopment, setShowDevelopment] = useState(false);
+  const [showFormulaGuide, setShowFormulaGuide] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
@@ -45,6 +47,7 @@ function App() {
     return localStorage.getItem('feedingNotificationsEnabled') === 'true';
   });
   const [showMenu, setShowMenu] = useState(false);
+  const [todayMilkIntake, setTodayMilkIntake] = useState({ current: 0, target150: 0, target180: 0, weight: 0 });
 
   // Request notification permission
   const requestNotificationPermission = async () => {
@@ -152,6 +155,42 @@ function App() {
 
     return () => clearInterval(interval);
   }, [entries, feedingNotificationsEnabled]);
+
+  // Calculate today's milk intake
+  useEffect(() => {
+    if (!loading && entries.length > 0 && measurements.length > 0) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      // Get today's bottle feedings
+      const todayBottleFeedings = entries.filter(e => {
+        const entryDate = new Date(e.dateTime);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime() && (e.breastMilkMl > 0 || e.formulaMl > 0);
+      });
+
+      // Calculate total ml today
+      const currentMl = todayBottleFeedings.reduce((sum, e) => sum + e.breastMilkMl + e.formulaMl, 0);
+
+      // Get latest weight (in grams, convert to kg)
+      const latestMeasurement = measurements
+        .filter(m => m.weightGrams > 0)
+        .sort((a, b) => b.measuredAt.getTime() - a.measuredAt.getTime())[0];
+
+      if (latestMeasurement) {
+        const weightKg = latestMeasurement.weightGrams / 1000;
+        const target150 = Math.round(weightKg * 150);
+        const target180 = Math.round(weightKg * 180);
+
+        setTodayMilkIntake({
+          current: currentMl,
+          target150: target150,
+          target180: target180,
+          weight: latestMeasurement.weightGrams
+        });
+      }
+    }
+  }, [entries, measurements, loading]);
 
   // Check for vitamin D reminder
   useEffect(() => {
@@ -666,6 +705,7 @@ function App() {
                           setShowWhiteNoise(false);
                           setShowWHO(false);
                           setShowDevelopment(false);
+                          setShowFormulaGuide(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showStats ? 'bg-slate-50' : ''}`}
@@ -681,12 +721,29 @@ function App() {
                           setShowStats(false);
                           setShowWhiteNoise(false);
                           setShowDevelopment(false);
+                          setShowFormulaGuide(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWHO ? 'bg-slate-50' : ''}`}
                       >
                         <i className={`fas fa-stethoscope text-lg ${showWHO ? 'text-blue-500' : 'text-slate-400'}`}></i>
                         <span className={`font-medium ${showWHO ? 'text-blue-600' : 'text-slate-700'}`}>WHO</span>
+                      </button>
+                      
+                      {/* Formula Guide Button */}
+                      <button
+                        onClick={() => {
+                          setShowFormulaGuide(!showFormulaGuide);
+                          setShowStats(false);
+                          setShowWhiteNoise(false);
+                          setShowWHO(false);
+                          setShowDevelopment(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showFormulaGuide ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-table text-lg ${showFormulaGuide ? 'text-pink-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showFormulaGuide ? 'text-pink-600' : 'text-slate-700'}`}>Dávkovanie mlieka</span>
                       </button>
                       
                       {/* Development Button */}
@@ -696,6 +753,7 @@ function App() {
                           setShowStats(false);
                           setShowWhiteNoise(false);
                           setShowWHO(false);
+                          setShowFormulaGuide(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showDevelopment ? 'bg-slate-50' : ''}`}
@@ -711,6 +769,7 @@ function App() {
                           setShowStats(false);
                           setShowWHO(false);
                           setShowDevelopment(false);
+                          setShowFormulaGuide(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWhiteNoise ? 'bg-slate-50' : ''}`}
@@ -1102,6 +1161,69 @@ function App() {
           </div>
         )}
 
+        {/* Daily Milk Intake Widget */}
+        {todayMilkIntake.weight > 0 && (
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-xl shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm opacity-90 mb-1">
+                  <i className="fas fa-chart-line mr-2"></i>
+                  Denný príjem mlieka (váha: {todayMilkIntake.weight}g)
+                </p>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <p className="text-4xl font-bold">
+                    {todayMilkIntake.current} ml
+                  </p>
+                  <p className="text-lg opacity-90">
+                    / {todayMilkIntake.target150}-{todayMilkIntake.target180} ml
+                  </p>
+                </div>
+                
+                {/* Progress bar */}
+                <div className="w-full bg-white/20 rounded-full h-3 mb-2 overflow-hidden">
+                  <div 
+                    className="bg-white h-full rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${Math.min(100, (todayMilkIntake.current / todayMilkIntake.target180) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                
+                {/* Status text */}
+                <div className="flex items-center gap-2 text-sm">
+                  {todayMilkIntake.current < todayMilkIntake.target150 ? (
+                    <>
+                      <i className="fas fa-arrow-up"></i>
+                      <span>Potrebujete ešte {todayMilkIntake.target150 - todayMilkIntake.current} ml (minimum)</span>
+                    </>
+                  ) : todayMilkIntake.current < todayMilkIntake.target180 ? (
+                    <>
+                      <i className="fas fa-check-circle"></i>
+                      <span>V norme! Môžete pridať až {todayMilkIntake.target180 - todayMilkIntake.current} ml</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-check-circle"></i>
+                      <span>Cieľ splnený!</span>
+                    </>
+                  )}
+                </div>
+                
+                {/* Calculation info */}
+                <div className="border-t border-white/20 pt-2 mt-2">
+                  <p className="text-xs opacity-75">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    Odporúčaný denný príjem: 150-180 ml/kg (8 dávok/deň)
+                  </p>
+                </div>
+              </div>
+              <div className="text-5xl opacity-80">
+                <i className="fas fa-baby-bottle"></i>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Last Bottle Feeding Stopwatch */}
         {lastBottleFeedingData && (() => {
           const nextFeedingTime = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (3 * 60 * 60 * 1000));
@@ -1154,6 +1276,8 @@ function App() {
             babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
           ) : showWHO ? (
             babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
+          ) : showFormulaGuide ? (
+            <FormulaGuide currentWeight={measurements.length > 0 ? measurements[0].weightGrams : undefined} />
           ) : showWhiteNoise ? (
             <WhiteNoise />
           ) : showStats ? (
