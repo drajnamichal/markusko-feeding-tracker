@@ -1,4 +1,4 @@
-const CACHE_NAME = 'markusik-tracker-v22';
+const CACHE_NAME = 'markusik-tracker-v23';
 const urlsToCache = [
   '/',
   '/index.html',

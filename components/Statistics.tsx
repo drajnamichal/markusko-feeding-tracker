@@ -164,6 +164,42 @@ const Statistics: React.FC<StatisticsProps> = ({ entries, sleepSessions }) => {
     const todaySleepStats = calculateSleepStats(todaySleeps);
     const weekSleepStats = calculateSleepStats(weekSleeps);
 
+    // Calculate daily feeding statistics (last 30 days)
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const dailyStats = new Map<string, { totalMl: number; breastfedCount: number }>();
+    
+    entries.forEach(entry => {
+      const entryDate = new Date(entry.dateTime);
+      if (entryDate >= thirtyDaysAgo) {
+        const dateKey = entryDate.toLocaleDateString('sk-SK');
+        
+        if (!dailyStats.has(dateKey)) {
+          dailyStats.set(dateKey, { totalMl: 0, breastfedCount: 0 });
+        }
+        
+        const dayData = dailyStats.get(dateKey)!;
+        dayData.totalMl += entry.breastMilkMl + entry.formulaMl;
+        if (entry.breastfed) {
+          dayData.breastfedCount += 1;
+        }
+      }
+    });
+
+    // Convert to array and sort by date (newest first)
+    const dailyStatsArray = Array.from(dailyStats.entries())
+      .map(([date, data]) => ({
+        date,
+        totalMl: data.totalMl,
+        breastfedCount: data.breastfedCount,
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.date.split('.').reverse().join('-'));
+        const dateB = new Date(b.date.split('.').reverse().join('-'));
+        return dateB.getTime() - dateA.getTime();
+      });
+
     return {
       today: todayStats,
       week: weekStats,
@@ -175,6 +211,7 @@ const Statistics: React.FC<StatisticsProps> = ({ entries, sleepSessions }) => {
       pieData,
       todaySleep: todaySleepStats,
       weekSleep: weekSleepStats,
+      dailyStatsArray,
     };
   }, [entries, sleepSessions]);
 
@@ -196,6 +233,63 @@ const Statistics: React.FC<StatisticsProps> = ({ entries, sleepSessions }) => {
 
   return (
     <div className="space-y-6">
+      {/* Daily Feeding Table */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-teal-500 to-blue-500 text-white p-4">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <i className="fas fa-table"></i>
+            Denný prehľad kŕmenia
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-slate-100 border-b-2 border-slate-200">
+                <th className="px-6 py-3 text-left text-sm font-bold text-slate-700">Dátum</th>
+                <th className="px-6 py-3 text-center text-sm font-bold text-slate-700">Celkom mlieka (ml)</th>
+                <th className="px-6 py-3 text-center text-sm font-bold text-slate-700">Počet dojčení</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.dailyStatsArray.length > 0 ? (
+                stats.dailyStatsArray.map((day, index) => (
+                  <tr 
+                    key={day.date}
+                    className={`border-b border-slate-200 hover:bg-slate-50 transition-colors ${
+                      index === 0 ? 'bg-teal-50' : ''
+                    }`}
+                  >
+                    <td className="px-6 py-4 text-sm text-slate-700 font-medium flex items-center gap-2">
+                      {index === 0 && <i className="fas fa-star text-teal-500"></i>}
+                      {day.date}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-lg font-bold text-blue-600">
+                        {day.totalMl}
+                      </span>
+                      <span className="text-sm text-slate-500 ml-1">ml</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-lg font-bold text-teal-600">
+                        {day.breastfedCount}
+                      </span>
+                      <span className="text-sm text-slate-500 ml-1">×</span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="px-6 py-8 text-center text-slate-500">
+                    <i className="fas fa-info-circle mr-2"></i>
+                    Zatiaľ nie sú k dispozícii žiadne údaje
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Last Feeding Alert */}
       {stats.lastFeeding && (
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
