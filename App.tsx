@@ -11,6 +11,7 @@ import DevelopmentGuide from './components/DevelopmentGuide';
 import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
 import FormulaGuide from './components/FormulaGuide';
+import AIDoctor from './components/AIDoctor';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
   const [showWHO, setShowWHO] = useState(false);
   const [showDevelopment, setShowDevelopment] = useState(false);
   const [showFormulaGuide, setShowFormulaGuide] = useState(false);
+  const [showAIDoctor, setShowAIDoctor] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
   const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
@@ -712,6 +714,23 @@ function App() {
                       
                       <div className="border-t border-slate-100 my-1"></div>
                       
+                      {/* AI Doctor Button */}
+                      <button
+                        onClick={() => {
+                          setShowAIDoctor(!showAIDoctor);
+                          setShowStats(false);
+                          setShowWhiteNoise(false);
+                          setShowWHO(false);
+                          setShowDevelopment(false);
+                          setShowFormulaGuide(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showAIDoctor ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-user-doctor text-lg ${showAIDoctor ? 'text-teal-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showAIDoctor ? 'text-teal-600' : 'text-slate-700'}`}>AI Doktor</span>
+                      </button>
+                      
                       {/* Statistics Button */}
                       <button
                         onClick={() => {
@@ -720,6 +739,7 @@ function App() {
                           setShowWHO(false);
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
+                          setShowAIDoctor(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showStats ? 'bg-slate-50' : ''}`}
@@ -736,6 +756,7 @@ function App() {
                           setShowWhiteNoise(false);
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
+                          setShowAIDoctor(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWHO ? 'bg-slate-50' : ''}`}
@@ -752,6 +773,7 @@ function App() {
                           setShowWhiteNoise(false);
                           setShowWHO(false);
                           setShowDevelopment(false);
+                          setShowAIDoctor(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showFormulaGuide ? 'bg-slate-50' : ''}`}
@@ -768,6 +790,7 @@ function App() {
                           setShowWhiteNoise(false);
                           setShowWHO(false);
                           setShowFormulaGuide(false);
+                          setShowAIDoctor(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showDevelopment ? 'bg-slate-50' : ''}`}
@@ -784,6 +807,7 @@ function App() {
                           setShowWHO(false);
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
+                          setShowAIDoctor(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWhiteNoise ? 'bg-slate-50' : ''}`}
@@ -1328,7 +1352,16 @@ function App() {
           />
         </div>
         <div className="lg:col-span-2">
-          {showDevelopment ? (
+          {showAIDoctor ? (
+            babyProfile ? (
+              <AIDoctor 
+                babyProfile={babyProfile}
+                entries={entries}
+                measurements={measurements}
+                sleepSessions={sleepSessions}
+              />
+            ) : <div>Loading...</div>
+          ) : showDevelopment ? (
             babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
           ) : showWHO ? (
             babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
