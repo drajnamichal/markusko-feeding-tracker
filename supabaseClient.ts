@@ -24,6 +24,7 @@ export interface LogEntryDB {
   tummy_time: boolean;
   sterilization: boolean;
   bathing: boolean;
+  sab_simplex: boolean;
   notes: string;
   created_at: string;
   updated_at: string;
@@ -43,6 +44,7 @@ export const logEntryToDB = (entry: LogEntry): Omit<LogEntryDB, 'created_at' | '
   tummy_time: entry.tummyTime,
   sterilization: entry.sterilization,
   bathing: entry.bathing,
+  sab_simplex: entry.sabSimplex,
   notes: entry.notes,
 });
 
@@ -60,6 +62,7 @@ export const dbToLogEntry = (dbEntry: LogEntryDB): LogEntry => ({
   tummyTime: dbEntry.tummy_time ?? false,
   sterilization: dbEntry.sterilization ?? false,
   bathing: dbEntry.bathing ?? false,
+  sabSimplex: dbEntry.sab_simplex ?? false,
   notes: dbEntry.notes,
 });
 

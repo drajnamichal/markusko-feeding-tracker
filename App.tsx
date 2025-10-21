@@ -28,6 +28,8 @@ function App() {
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
   const [showBathingReminder, setShowBathingReminder] = useState(false);
   const [daysSinceLastBathing, setDaysSinceLastBathing] = useState(0);
+  const [sabSimplexTodayCount, setSabSimplexTodayCount] = useState(0);
+  const [hoursSinceLastSabSimplex, setHoursSinceLastSabSimplex] = useState<number | null>(null);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
@@ -261,6 +263,35 @@ function App() {
       }
     }
   }, [entries, loading]);
+
+  // Check SAB Simplex doses
+  useEffect(() => {
+    if (!loading) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const sabSimplexEntries = entries.filter(e => {
+        const entryDate = new Date(e.dateTime);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime() && e.sabSimplex;
+      });
+
+      setSabSimplexTodayCount(sabSimplexEntries.length);
+
+      // Calculate time since last dose
+      const allSabSimplexEntries = entries
+        .filter(e => e.sabSimplex)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (allSabSimplexEntries.length > 0) {
+        const lastDose = allSabSimplexEntries[0];
+        const hoursSince = (currentTime.getTime() - lastDose.dateTime.getTime()) / (1000 * 60 * 60);
+        setHoursSinceLastSabSimplex(hoursSince);
+      } else {
+        setHoursSinceLastSabSimplex(null);
+      }
+    }
+  }, [entries, currentTime, loading]);
 
   // Update current time every minute for live stopwatch
   useEffect(() => {
@@ -1099,6 +1130,42 @@ function App() {
             >
               <i className="fas fa-times text-xl"></i>
             </button>
+          </div>
+        )}
+
+        {/* SAB Simplex Widget */}
+        {(sabSimplexTodayCount > 0 || (hoursSinceLastSabSimplex !== null && hoursSinceLastSabSimplex >= 4)) && (
+          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-pills text-3xl text-purple-500"></i>
+              <div className="flex-1">
+                <p className="font-bold text-purple-800 mb-1">💊 SAB Simplex</p>
+                <div className="text-sm text-purple-700 space-y-1">
+                  <p>
+                    Dnes: <span className="font-bold text-lg">{sabSimplexTodayCount}/4</span> dávok
+                    {sabSimplexTodayCount < 4 && (
+                      <span className="ml-2">(ešte {4 - sabSimplexTodayCount}x)</span>
+                    )}
+                  </p>
+                  {hoursSinceLastSabSimplex !== null && (
+                    <p>
+                      Od poslednej dávky: <span className="font-bold">{hoursSinceLastSabSimplex.toFixed(1)}h</span>
+                      {hoursSinceLastSabSimplex >= 4 ? (
+                        <span className="ml-2 text-green-600 font-bold">✓ Môžete podať ďalšiu dávku</span>
+                      ) : (
+                        <span className="ml-2 text-amber-600">
+                          Ďalšia dávka za {(4 - hoursSinceLastSabSimplex).toFixed(1)}h
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  <p className="text-xs text-purple-600 mt-2">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    Dávkovanie: 4x10 kvapiek do mlieka (každé 4 hodiny)
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

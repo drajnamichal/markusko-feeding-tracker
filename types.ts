@@ -11,6 +11,7 @@ export interface LogEntry {
   tummyTime: boolean;
   sterilization: boolean;
   bathing: boolean;
+  sabSimplex: boolean;
   notes: string;
 }
 
