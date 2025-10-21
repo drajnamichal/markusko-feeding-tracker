@@ -171,7 +171,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
             </label>
             <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
                 <input type="checkbox" checked={sabSimplex} onChange={(e) => setSabSimplex(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-purple-500 focus:ring-purple-400"/>
-                <span className="text-slate-700">SAB Simplex 💊</span>
+                <span className="text-slate-700">SAB Simplex</span>
             </label>
         </div>
 
