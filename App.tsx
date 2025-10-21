@@ -1133,8 +1133,32 @@ function App() {
           </div>
         )}
 
-        {/* SAB Simplex Widget */}
-        {(sabSimplexTodayCount > 0 || (hoursSinceLastSabSimplex !== null && hoursSinceLastSabSimplex >= 4)) && (
+        {/* SAB Simplex - Initial reminder (no doses today) */}
+        {sabSimplexTodayCount === 0 && (
+          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-pills text-3xl text-purple-500"></i>
+              <div>
+                <p className="font-bold text-purple-800">💊 Nezabudni dať SAB Simplex</p>
+                <p className="text-sm text-purple-700">10 kvapiek do mlieka</p>
+                <p className="text-xs text-purple-600 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Dávkovanie: 4x denne, každé 4 hodiny
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {/* User will add entry */}}
+              className="text-purple-500 hover:text-purple-700 transition-colors"
+              aria-label="Info"
+            >
+              <i className="fas fa-info-circle text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {/* SAB Simplex - Tracking widget (after first dose) */}
+        {sabSimplexTodayCount > 0 && (
           <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
             <div className="flex items-center gap-3">
               <i className="fas fa-pills text-3xl text-purple-500"></i>
