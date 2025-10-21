@@ -65,7 +65,7 @@ function App() {
   const sendFeedingNotification = () => {
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification('⏰ Čas na kŕmenie!', {
-        body: 'Už 3 hodiny od posledného kŕmenia',
+        body: 'Už 2 hodiny od posledného kŕmenia',
         icon: '/icons/192.png',
         badge: '/icons/72.png',
         tag: 'feeding-reminder',
@@ -142,8 +142,8 @@ function App() {
         const lastFeeding = feedings[0];
         const hoursSinceLastFeeding = (now.getTime() - lastFeeding.dateTime.getTime()) / (1000 * 60 * 60);
 
-        // Send notification if 3 hours have passed
-        if (hoursSinceLastFeeding >= 3 && hoursSinceLastFeeding < 3.02) { // Small window to avoid multiple notifications
+        // Send notification if 2 hours have passed
+        if (hoursSinceLastFeeding >= 2 && hoursSinceLastFeeding < 2.02) { // Small window to avoid multiple notifications
           sendFeedingNotification();
         }
       }

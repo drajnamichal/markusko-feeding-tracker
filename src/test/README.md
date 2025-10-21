@@ -69,9 +69,9 @@ Testuje logiku pripomienok:
 Testuje výpočty kŕmenia:
 - **Posledné kŕmenie** - vyhľadanie najnovšieho
 - **Čas od kŕmenia** - hodiny a minúty
-- **Ďalšie kŕmenie** - výpočet času + 3h
+- **Ďalšie kŕmenie** - výpočet času + 2h
 - **Priemerný interval** - medzi kŕmeniami
-- **Notifikácie** - presne po 3 hodinách
+- **Notifikácie** - presne po 2 hodinách
 - **Detekcia fľašového kŕmenia**
 
 ## Štatistiky testov

@@ -102,8 +102,8 @@ const WHOGuidelines: React.FC<WHOGuidelinesProps> = ({ entries, birthDate }) => 
     {
       id: 'feeding-frequency',
       title: 'Frekvencia kŕmenia',
-      description: 'Novorodenci by mali jesť každé 2-3 hodiny.',
-      recommendation: 'Minimálne každé 3 hodiny, aj v noci v prvých týždňoch.',
+      description: 'Novorodenci by mali jesť každé 2 hodiny.',
+      recommendation: 'Minimálne každé 2 hodiny, aj v noci v prvých týždňoch.',
       icon: 'fa-clock',
       color: 'text-purple-600',
       checkStatus: (entries, ageInDays) => {

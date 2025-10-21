@@ -76,20 +76,20 @@ describe('Feeding Time Calculations', () => {
   });
 
   describe('Next feeding time', () => {
-    it('should calculate next feeding time (3 hours after last)', () => {
+    it('should calculate next feeding time (2 hours after last)', () => {
       const lastFeedingTime = new Date('2025-10-17T10:00:00Z');
-      const nextFeedingTime = new Date(lastFeedingTime.getTime() + (3 * 60 * 60 * 1000));
+      const nextFeedingTime = new Date(lastFeedingTime.getTime() + (2 * 60 * 60 * 1000));
 
-      expect(nextFeedingTime.getUTCHours()).toBe(13);
+      expect(nextFeedingTime.getUTCHours()).toBe(12);
       expect(nextFeedingTime.getUTCMinutes()).toBe(0);
     });
 
     it('should handle feeding across midnight', () => {
       const lastFeedingTime = new Date('2025-10-17T22:30:00Z');
-      const nextFeedingTime = new Date(lastFeedingTime.getTime() + (3 * 60 * 60 * 1000));
+      const nextFeedingTime = new Date(lastFeedingTime.getTime() + (2 * 60 * 60 * 1000));
 
       expect(nextFeedingTime.getUTCDate()).toBe(18);
-      expect(nextFeedingTime.getUTCHours()).toBe(1);
+      expect(nextFeedingTime.getUTCHours()).toBe(0);
       expect(nextFeedingTime.getUTCMinutes()).toBe(30);
     });
   });
@@ -148,42 +148,42 @@ describe('Feeding Time Calculations', () => {
   });
 
   describe('Feeding notification timing', () => {
-    it('should trigger notification at 3 hours', () => {
+    it('should trigger notification at 2 hours', () => {
       const lastFeedingTime = new Date('2025-10-17T10:00:00Z');
-      const currentTime = new Date('2025-10-17T13:00:00Z'); // Exactly 3 hours
+      const currentTime = new Date('2025-10-17T12:00:00Z'); // Exactly 2 hours
 
       const hoursSinceLastFeeding = 
         (currentTime.getTime() - lastFeedingTime.getTime()) / (1000 * 60 * 60);
 
-      const shouldNotify = hoursSinceLastFeeding >= 3 && hoursSinceLastFeeding < 3.02;
+      const shouldNotify = hoursSinceLastFeeding >= 2 && hoursSinceLastFeeding < 2.02;
 
-      expect(hoursSinceLastFeeding).toBe(3);
+      expect(hoursSinceLastFeeding).toBe(2);
       expect(shouldNotify).toBe(true);
     });
 
-    it('should not trigger notification before 3 hours', () => {
+    it('should not trigger notification before 2 hours', () => {
       const lastFeedingTime = new Date('2025-10-17T10:00:00Z');
-      const currentTime = new Date('2025-10-17T12:30:00Z'); // 2.5 hours
+      const currentTime = new Date('2025-10-17T11:30:00Z'); // 1.5 hours
 
       const hoursSinceLastFeeding = 
         (currentTime.getTime() - lastFeedingTime.getTime()) / (1000 * 60 * 60);
 
-      const shouldNotify = hoursSinceLastFeeding >= 3 && hoursSinceLastFeeding < 3.02;
+      const shouldNotify = hoursSinceLastFeeding >= 2 && hoursSinceLastFeeding < 2.02;
 
-      expect(hoursSinceLastFeeding).toBe(2.5);
+      expect(hoursSinceLastFeeding).toBe(1.5);
       expect(shouldNotify).toBe(false);
     });
 
     it('should not trigger duplicate notification after time window', () => {
       const lastFeedingTime = new Date('2025-10-17T10:00:00Z');
-      const currentTime = new Date('2025-10-17T13:05:00Z'); // 3h 5m (outside window)
+      const currentTime = new Date('2025-10-17T12:05:00Z'); // 2h 5m (outside window)
 
       const hoursSinceLastFeeding = 
         (currentTime.getTime() - lastFeedingTime.getTime()) / (1000 * 60 * 60);
 
-      const shouldNotify = hoursSinceLastFeeding >= 3 && hoursSinceLastFeeding < 3.02;
+      const shouldNotify = hoursSinceLastFeeding >= 2 && hoursSinceLastFeeding < 2.02;
 
-      expect(hoursSinceLastFeeding).toBeGreaterThan(3.02);
+      expect(hoursSinceLastFeeding).toBeGreaterThan(2.02);
       expect(shouldNotify).toBe(false);
     });
   });
