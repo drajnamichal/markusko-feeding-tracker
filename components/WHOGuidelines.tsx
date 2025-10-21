@@ -127,30 +127,6 @@ const WHOGuidelines: React.FC<WHOGuidelinesProps> = ({ entries, birthDate }) => 
       }
     },
     {
-      id: 'vitamin-d',
-      title: 'Vitamín D',
-      description: 'WHO odporúča podávanie vitamínu D od narodenia pre všetky dojčené deti.',
-      recommendation: '400 IU (10 μg) denne od narodenia.',
-      icon: 'fa-sun',
-      color: 'text-orange-600',
-      checkStatus: (entries, ageInDays) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const todayVitaminD = entries.some(e => {
-          const entryDate = new Date(e.dateTime);
-          entryDate.setHours(0, 0, 0, 0);
-          return entryDate.getTime() === today.getTime() && e.vitaminD;
-        });
-
-        return {
-          met: todayVitaminD,
-          current: todayVitaminD ? 'Podaný dnes' : 'Nepodaný dnes',
-          target: 'Denne 400 IU'
-        };
-      }
-    },
-    {
       id: 'tummy-time',
       title: 'Tummy Time',
       description: 'Tummy time pomáha rozvíjať sily krku, ramien a chrbtice.',
