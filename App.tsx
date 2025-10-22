@@ -37,6 +37,7 @@ function App() {
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
+  const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [showTummyTimeStopwatch, setShowTummyTimeStopwatch] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -508,6 +509,55 @@ function App() {
       console.error('Error adding measurement:', error);
       alert('Chyba pri pridávaní merania');
     }
+  };
+
+  const updateMeasurement = async (updatedMeasurement: Measurement) => {
+    try {
+      const dbMeasurement = measurementToDB(updatedMeasurement);
+      const { error } = await supabase
+        .from('measurements')
+        .update(dbMeasurement)
+        .eq('id', updatedMeasurement.id);
+
+      if (error) throw error;
+
+      setMeasurements(prev => 
+        prev.map(m => m.id === updatedMeasurement.id ? updatedMeasurement : m)
+          .sort((a, b) => b.measuredAt.getTime() - a.measuredAt.getTime())
+      );
+      setEditingMeasurement(null);
+      setShowMeasurementModal(false);
+    } catch (error) {
+      console.error('Error updating measurement:', error);
+      alert('Chyba pri aktualizácii merania');
+    }
+  };
+
+  const deleteMeasurement = async (id: string) => {
+    if (!confirm('Naozaj chcete vymazať toto meranie?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('measurements')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setMeasurements(prev => prev.filter(m => m.id !== id));
+    } catch (error) {
+      console.error('Error deleting measurement:', error);
+      alert('Chyba pri mazaní merania');
+    }
+  };
+
+  const startEditMeasurement = (measurement: Measurement) => {
+    setEditingMeasurement(measurement);
+    setShowMeasurementModal(true);
+  };
+
+  const cancelEditMeasurement = () => {
+    setEditingMeasurement(null);
   };
 
   const loadMeasurements = async () => {
@@ -992,10 +1042,13 @@ function App() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-slate-800">
                 <i className="fas fa-ruler-combined mr-2 text-pink-500"></i>
-                Zaznamenať miery
+                {editingMeasurement ? 'Upraviť miery' : 'Zaznamenať miery'}
               </h2>
               <button
-                onClick={() => setShowMeasurementModal(false)}
+                onClick={() => {
+                  setShowMeasurementModal(false);
+                  setEditingMeasurement(null);
+                }}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <i className="fas fa-times text-xl"></i>
@@ -1014,7 +1067,18 @@ function App() {
                 const notes = (formData.get('notes') as string) || '';
                 
                 if (weightGrams > 0 || (heightCm && heightCm > 0) || (headCircumferenceCm && headCircumferenceCm > 0)) {
-                  addMeasurement(weightGrams, heightCm, headCircumferenceCm, notes);
+                  if (editingMeasurement) {
+                    updateMeasurement({
+                      ...editingMeasurement,
+                      weightGrams: weightGrams,
+                      heightCm: heightCm || 0,
+                      headCircumferenceCm: headCircumferenceCm || 0,
+                      notes: notes,
+                      updatedAt: new Date(),
+                    });
+                  } else {
+                    addMeasurement(weightGrams, heightCm, headCircumferenceCm, notes);
+                  }
                 } else {
                   alert('Zadajte aspoň jednu mieru');
                 }
@@ -1029,6 +1093,7 @@ function App() {
                     type="number"
                     id="weightGrams"
                     name="weightGrams"
+                    defaultValue={editingMeasurement?.weightGrams > 0 ? editingMeasurement.weightGrams : ''}
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     placeholder="Napr. 3500"
                     min="0"
@@ -1046,6 +1111,7 @@ function App() {
                     id="heightCm"
                     name="heightCm"
                     step="0.1"
+                    defaultValue={editingMeasurement?.heightCm > 0 ? editingMeasurement.heightCm : ''}
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     placeholder="Napr. 52.5"
                     min="0"
@@ -1062,6 +1128,7 @@ function App() {
                     id="headCircumferenceCm"
                     name="headCircumferenceCm"
                     step="0.1"
+                    defaultValue={editingMeasurement?.headCircumferenceCm > 0 ? editingMeasurement.headCircumferenceCm : ''}
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     placeholder="Napr. 35.5"
                     min="0"
@@ -1077,6 +1144,7 @@ function App() {
                     id="notes"
                     name="notes"
                     rows={2}
+                    defaultValue={editingMeasurement?.notes || ''}
                     className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                     placeholder="Napr. Po kŕmení, pred spánkom..."
                   ></textarea>
@@ -1088,16 +1156,36 @@ function App() {
                   type="submit"
                   className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-rose-600 transition-all"
                 >
-                  <i className="fas fa-save mr-2"></i>Uložiť meranie
+                  <i className="fas fa-save mr-2"></i>{editingMeasurement ? 'Uložiť zmeny' : 'Uložiť meranie'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowMeasurementModal(false)}
+                  onClick={() => {
+                    setShowMeasurementModal(false);
+                    setEditingMeasurement(null);
+                  }}
                   className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
                 >
                   <i className="fas fa-times mr-2"></i>Zrušiť
                 </button>
               </div>
+              
+              {/* Delete button when editing */}
+              {editingMeasurement && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editingMeasurement) {
+                      deleteMeasurement(editingMeasurement.id);
+                      setShowMeasurementModal(false);
+                      setEditingMeasurement(null);
+                    }
+                  }}
+                  className="w-full mt-3 bg-red-50 text-red-600 py-3 rounded-lg font-semibold hover:bg-red-100 transition-colors border border-red-200"
+                >
+                  <i className="fas fa-trash mr-2"></i>Vymazať meranie
+                </button>
+              )}
             </form>
 
             {/* Recent Measurements */}
@@ -1108,14 +1196,30 @@ function App() {
                 </h3>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {measurements.slice(0, 5).map((measurement) => (
-                    <div key={measurement.id} className="bg-slate-50 p-3 rounded-lg text-sm">
+                    <div key={measurement.id} className="bg-slate-50 p-3 rounded-lg text-sm hover:bg-slate-100 transition-colors">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-medium text-slate-700">
                           {new Date(measurement.measuredAt).toLocaleDateString('sk-SK')}
                         </span>
-                        <span className="text-xs text-slate-500">
-                          {new Date(measurement.measuredAt).toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">
+                            {new Date(measurement.measuredAt).toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <button
+                            onClick={() => startEditMeasurement(measurement)}
+                            className="text-blue-500 hover:text-blue-700 transition-colors"
+                            title="Upraviť"
+                          >
+                            <i className="fas fa-pen text-xs"></i>
+                          </button>
+                          <button
+                            onClick={() => deleteMeasurement(measurement.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            title="Vymazať"
+                          >
+                            <i className="fas fa-trash text-xs"></i>
+                          </button>
+                        </div>
                       </div>
                       <div className="flex gap-4 text-slate-600 flex-wrap">
                         {measurement.weightGrams > 0 && (
