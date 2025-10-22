@@ -1461,7 +1461,7 @@ function App() {
 
         {/* Last Bottle Feeding Stopwatch */}
         {lastBottleFeedingData && (() => {
-          const nextFeedingTime = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (3 * 60 * 60 * 1000));
+          const nextFeedingTime = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (2 * 60 * 60 * 1000));
           return (
             <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
               <div className="flex items-center justify-between">
