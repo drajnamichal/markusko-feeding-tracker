@@ -29,6 +29,15 @@ Testuje konverzné funkcie medzi aplikačnými dátovými typmi a databázovým 
 - Round-trip konverzie (data → DB → data)
 - Správne mapovanie polí (snake_case ↔ camelCase)
 
+### `tummyTime.test.ts`
+Testuje funkcionalitu Tummy Time stopiek a validáciu záznamov:
+- **Vytvorenie záznamu** - všetky požadované polia (vrátane sabSimplex, bathing)
+- **Formátovanie času** - konverzia sekúnd na "X min Y sek"
+- **Databázová konverzia** - bezchybné ukladanie do DB
+- **Round-trip konverzia** - data → DB → data pre Tummy Time
+- **Validácia polí** - zabezpečenie, že všetky polia sú prítomné
+- **Regression test** - ochrana pred chýbajúcimi poľami pri vytváraní záznamov
+
 ### `statistics.test.ts`
 Testuje výpočty štatistík:
 - **Počet kŕmení** - správne počítanie dojčení a kŕmení z fľaše
@@ -77,8 +86,8 @@ Testuje výpočty kŕmenia:
 ## Štatistiky testov
 
 ```
-✓ 72 testov passed
-✓ 6 test suites
+✓ 80 testov passed
+✓ 7 test suites
 ✓ 100% pass rate
 ```
 
@@ -91,6 +100,8 @@ Testuje výpočty kŕmenia:
 - ✅ Sleep tracking and statistics
 - ✅ Reminders logic (Vitamin D, Tummy Time, Sterilization, Bathing)
 - ✅ Feeding time calculations and notifications
+- ✅ Tummy Time stopwatch and entry creation
+- ✅ Field validation and regression tests
 
 ## Pridanie nových testov
 

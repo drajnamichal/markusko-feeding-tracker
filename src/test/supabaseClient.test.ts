@@ -27,6 +27,8 @@ describe('supabaseClient data conversions', () => {
         vitaminD: true,
         tummyTime: false,
         sterilization: false,
+        bathing: false,
+        sabSimplex: false,
         notes: 'Test note',
       };
 
@@ -38,6 +40,8 @@ describe('supabaseClient data conversions', () => {
       expect(dbEntry.breast_milk_ml).toBe(60);
       expect(dbEntry.breastfed).toBe(true);
       expect(dbEntry.vitamin_d).toBe(true);
+      expect(dbEntry.bathing).toBe(false);
+      expect(dbEntry.sab_simplex).toBe(false);
       expect(dbEntry.notes).toBe('Test note');
     });
 
@@ -54,6 +58,8 @@ describe('supabaseClient data conversions', () => {
         vitamin_d: true,
         tummy_time: false,
         sterilization: false,
+        bathing: false,
+        sab_simplex: false,
         notes: 'Test note',
         created_at: '2025-10-15T10:00:00Z',
         updated_at: '2025-10-15T10:00:00Z',
@@ -67,6 +73,8 @@ describe('supabaseClient data conversions', () => {
       expect(entry.breastMilkMl).toBe(60);
       expect(entry.breastfed).toBe(true);
       expect(entry.vitaminD).toBe(true);
+      expect(entry.bathing).toBe(false);
+      expect(entry.sabSimplex).toBe(false);
       expect(entry.notes).toBe('Test note');
       expect(entry.dateTime).toBeInstanceOf(Date);
     });
@@ -84,6 +92,8 @@ describe('supabaseClient data conversions', () => {
         vitaminD: false,
         tummyTime: true,
         sterilization: false,
+        bathing: false,
+        sabSimplex: false,
         notes: '',
       };
 
@@ -101,6 +111,8 @@ describe('supabaseClient data conversions', () => {
       expect(convertedEntry.formulaMl).toBe(originalEntry.formulaMl);
       expect(convertedEntry.vitaminD).toBe(originalEntry.vitaminD);
       expect(convertedEntry.tummyTime).toBe(originalEntry.tummyTime);
+      expect(convertedEntry.bathing).toBe(originalEntry.bathing);
+      expect(convertedEntry.sabSimplex).toBe(originalEntry.sabSimplex);
     });
   });
 

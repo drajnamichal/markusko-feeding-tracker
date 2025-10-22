@@ -604,6 +604,7 @@ function App() {
       tummyTime: true,
       sterilization: false,
       bathing: false,
+      sabSimplex: false,
       notes: `Tummy Time: ${Math.floor(seconds / 60)} min ${seconds % 60} sek`,
     };
 
