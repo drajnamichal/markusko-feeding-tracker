@@ -664,6 +664,21 @@ function App() {
     }
   };
 
+  // Navigate to home screen
+  const goToHome = () => {
+    setShowAIDoctor(false);
+    setShowStats(false);
+    setShowWhiteNoise(false);
+    setShowWHO(false);
+    setShowWHOPercentiles(false);
+    setShowDevelopment(false);
+    setShowFormulaGuide(false);
+    setShowMenu(false);
+  };
+
+  // Check if we're on home screen
+  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide;
+
 
   if (loading) {
     return <AppLoadingSkeleton />;
@@ -677,10 +692,17 @@ function App() {
             <div className="flex items-center gap-3">
               <div className="text-4xl">👶</div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-700 flex items-center gap-2">
+                <h1 
+                  className="text-2xl font-bold text-slate-700 flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors"
+                  onClick={goToHome}
+                  title="Späť na hlavnú stránku"
+                >
                   {babyProfile?.name || 'Loading...'}
                   <button
-                    onClick={() => setShowProfileModal(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowProfileModal(true);
+                    }}
                     className="text-sm text-slate-400 hover:text-teal-500 transition-colors"
                     title="Upraviť profil"
                   >
@@ -714,6 +736,17 @@ function App() {
                   {/* Menu Panel */}
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl z-50 overflow-hidden">
                     <div className="py-2">
+                      {/* Home Button */}
+                      <button
+                        onClick={goToHome}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${isHomeScreen ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-home text-lg ${isHomeScreen ? 'text-teal-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${isHomeScreen ? 'text-teal-600' : 'text-slate-700'}`}>Domov</span>
+                      </button>
+                      
+                      <div className="border-t border-slate-100 my-1"></div>
+                      
                       {/* Notifications Button */}
                       <button
                         onClick={() => {
@@ -1274,8 +1307,9 @@ function App() {
         />
       )}
 
-      {/* Reminders */}
-      <div className="container mx-auto px-4 pt-4 space-y-3">
+      {/* Reminders - Only on Home Screen */}
+      {isHomeScreen && (
+        <div className="container mx-auto px-4 pt-4 space-y-3">
 
         {showTummyTimeReminder && (
           <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-lg shadow-md flex items-center justify-between">
@@ -1501,17 +1535,20 @@ function App() {
           );
         })()}
       </div>
+      )}
 
-      <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
-          <EntryForm 
-            onAddEntry={addEntry} 
-            editingEntry={editingEntry}
-            onUpdateEntry={updateEntry}
-            onCancelEdit={cancelEdit}
-          />
-        </div>
-        <div className="lg:col-span-2">
+      <main className={`container mx-auto p-4 md:p-8 ${isHomeScreen ? 'grid grid-cols-1 lg:grid-cols-3 gap-8' : 'max-w-6xl'}`}>
+        {isHomeScreen && (
+          <div className="lg:col-span-1">
+            <EntryForm 
+              onAddEntry={addEntry} 
+              editingEntry={editingEntry}
+              onUpdateEntry={updateEntry}
+              onCancelEdit={cancelEdit}
+            />
+          </div>
+        )}
+        <div className={isHomeScreen ? 'lg:col-span-2' : ''}>
           {showAIDoctor ? (
             babyProfile ? (
               <AIDoctor 
