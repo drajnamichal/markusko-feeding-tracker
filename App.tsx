@@ -1121,7 +1121,7 @@ function App() {
                 
                 <div>
                   <label htmlFor="headCircumferenceCm" className="block text-sm font-medium text-slate-600 mb-2">
-                    <i className="fas fa-head-side-brain mr-2 text-pink-500"></i>Obvod hlavy (cm) <span className="text-xs text-slate-400">(voliteľné)</span>
+                    <i className="fas fa-brain mr-2 text-pink-500"></i>Obvod hlavy (cm) <span className="text-xs text-slate-400">(voliteľné)</span>
                   </label>
                   <input
                     type="number"
@@ -1236,7 +1236,7 @@ function App() {
                         )}
                         {measurement.headCircumferenceCm > 0 && (
                           <span>
-                            <i className="fas fa-head-side-brain text-pink-500 mr-1"></i>
+                            <i className="fas fa-brain text-pink-500 mr-1"></i>
                             {measurement.headCircumferenceCm}cm
                           </span>
                         )}

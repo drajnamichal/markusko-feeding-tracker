@@ -121,7 +121,7 @@ const addMeasurement = async (
 ```
 
 **Zobrazenie v histórii:**
-- Ikona: `fa-head-side-brain`
+- Ikona: `fa-brain`
 - Formát: `{value}cm`
 
 ---

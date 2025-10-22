@@ -98,7 +98,7 @@ const WHOPercentileCharts: React.FC<WHOPercentileChartsProps> = ({ babyProfile, 
       case 'length':
         return { label: 'Výška/Dĺžka', unit: 'cm', icon: 'fa-ruler-vertical' };
       case 'headCircumference':
-        return { label: 'Obvod hlavy', unit: 'cm', icon: 'fa-head-side-brain' };
+        return { label: 'Obvod hlavy', unit: 'cm', icon: 'fa-brain' };
     }
   };
 
@@ -217,7 +217,7 @@ const WHOPercentileCharts: React.FC<WHOPercentileChartsProps> = ({ babyProfile, 
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
-          <i className="fas fa-head-side-brain mr-2"></i>
+          <i className="fas fa-brain mr-2"></i>
           Obvod hlavy
         </button>
       </div>
