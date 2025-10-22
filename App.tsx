@@ -13,9 +13,11 @@ import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
 import FormulaGuide from './components/FormulaGuide';
 import AIDoctor from './components/AIDoctor';
+import { useToast } from './components/Toast';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
+  const toast = useToast();
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [editingEntry, setEditingEntry] = useState<LogEntry | null>(null);
   const [showStats, setShowStats] = useState(false);
@@ -373,7 +375,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading entries:', error);
-      alert('Chyba pri načítaní dát z databázy');
+      toast.error('Chyba pri načítaní dát z databázy');
     } finally {
       setLoading(false);
     }
@@ -410,9 +412,10 @@ function App() {
       if (error) throw error;
 
       setEntries(prevEntries => [entryWithDate, ...prevEntries].sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()));
+      toast.success('Záznam pridaný');
     } catch (error) {
       console.error('Error adding entry:', error);
-      alert('Chyba pri pridávaní záznamu');
+      toast.error('Chyba pri pridávaní záznamu');
     }
   };
   
@@ -426,9 +429,10 @@ function App() {
       if (error) throw error;
 
       setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+      toast.success('Záznam vymazaný');
     } catch (error) {
       console.error('Error deleting entry:', error);
-      alert('Chyba pri mazaní záznamu');
+      toast.error('Chyba pri mazaní záznamu');
     }
   };
 
@@ -448,9 +452,10 @@ function App() {
         ).sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime())
       );
       setEditingEntry(null);
+      toast.success('Záznam aktualizovaný');
     } catch (error) {
       console.error('Error updating entry:', error);
-      alert('Chyba pri aktualizácii záznamu');
+      toast.error('Chyba pri aktualizácii záznamu');
     }
   };
 
@@ -474,9 +479,10 @@ function App() {
 
       setBabyProfile(updatedProfile);
       setShowProfileModal(false);
+      toast.success('Profil aktualizovaný');
     } catch (error) {
       console.error('Error updating baby profile:', error);
-      alert('Chyba pri aktualizácii profilu');
+      toast.error('Chyba pri aktualizácii profilu');
     }
   };
 
@@ -505,9 +511,10 @@ function App() {
 
       setMeasurements(prev => [newMeasurement, ...prev]);
       setShowMeasurementModal(false);
+      toast.success('Meranie pridané');
     } catch (error) {
       console.error('Error adding measurement:', error);
-      alert('Chyba pri pridávaní merania');
+      toast.error('Chyba pri pridávaní merania');
     }
   };
 
@@ -527,9 +534,10 @@ function App() {
       );
       setEditingMeasurement(null);
       setShowMeasurementModal(false);
+      toast.success('Meranie aktualizované');
     } catch (error) {
       console.error('Error updating measurement:', error);
-      alert('Chyba pri aktualizácii merania');
+      toast.error('Chyba pri aktualizácii merania');
     }
   };
 
@@ -545,9 +553,10 @@ function App() {
       if (error) throw error;
 
       setMeasurements(prev => prev.filter(m => m.id !== id));
+      toast.success('Meranie vymazané');
     } catch (error) {
       console.error('Error deleting measurement:', error);
-      alert('Chyba pri mazaní merania');
+      toast.error('Chyba pri mazaní merania');
     }
   };
 
@@ -646,9 +655,10 @@ function App() {
 
       setSleepSessions(prev => [newSession, ...prev]);
       setShowSleepTracker(false);
+      toast.success('Spánok uložený');
     } catch (error) {
       console.error('Error saving sleep session:', error);
-      alert('Chyba pri ukladaní spánku');
+      toast.error('Chyba pri ukladaní spánku');
     }
   };
 
@@ -1080,7 +1090,7 @@ function App() {
                     addMeasurement(weightGrams, heightCm, headCircumferenceCm, notes);
                   }
                 } else {
-                  alert('Zadajte aspoň jednu mieru');
+                  toast.warning('Zadajte aspoň jednu mieru');
                 }
               }}
             >
