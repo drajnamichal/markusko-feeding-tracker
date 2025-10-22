@@ -14,6 +14,7 @@ import SleepTracker from './components/SleepTracker';
 import FormulaGuide from './components/FormulaGuide';
 import AIDoctor from './components/AIDoctor';
 import { useToast } from './components/Toast';
+import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
@@ -665,14 +666,7 @@ function App() {
 
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 font-sans flex items-center justify-center">
-        <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-4xl text-teal-500 mb-4"></i>
-          <p className="text-slate-600">Načítavam dáta...</p>
-        </div>
-      </div>
-    );
+    return <AppLoadingSkeleton />;
   }
 
   return (
@@ -1526,13 +1520,13 @@ function App() {
                 measurements={measurements}
                 sleepSessions={sleepSessions}
               />
-            ) : <div>Loading...</div>
+            ) : <ComponentLoadingSkeleton type="ai" />
           ) : showWHOPercentiles ? (
-            babyProfile ? <WHOPercentileCharts babyProfile={babyProfile} measurements={measurements} /> : <div>Loading...</div>
+            babyProfile ? <WHOPercentileCharts babyProfile={babyProfile} measurements={measurements} /> : <ComponentLoadingSkeleton type="percentiles" />
           ) : showDevelopment ? (
-            babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
+            babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="development" />
           ) : showWHO ? (
-            babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
+            babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="who" />
           ) : showFormulaGuide ? (
             <FormulaGuide currentWeight={measurements.length > 0 ? measurements[0].weightGrams : undefined} />
           ) : showWhiteNoise ? (
