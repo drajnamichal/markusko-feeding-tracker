@@ -106,6 +106,7 @@ export interface MeasurementDB {
   measured_at: string;
   weight_grams: number;
   height_cm: number;
+  head_circumference_cm: number;
   notes: string;
   created_at: string;
   updated_at: string;
@@ -117,6 +118,7 @@ export const measurementToDB = (measurement: Measurement): Omit<MeasurementDB, '
   measured_at: measurement.measuredAt.toISOString(),
   weight_grams: measurement.weightGrams,
   height_cm: measurement.heightCm,
+  head_circumference_cm: measurement.headCircumferenceCm,
   notes: measurement.notes || '',
 });
 
@@ -127,6 +129,7 @@ export const dbToMeasurement = (dbMeasurement: MeasurementDB): Measurement => ({
   measuredAt: new Date(dbMeasurement.measured_at),
   weightGrams: dbMeasurement.weight_grams,
   heightCm: dbMeasurement.height_cm,
+  headCircumferenceCm: dbMeasurement.head_circumference_cm || 0,
   notes: dbMeasurement.notes,
   createdAt: new Date(dbMeasurement.created_at),
   updatedAt: new Date(dbMeasurement.updated_at),

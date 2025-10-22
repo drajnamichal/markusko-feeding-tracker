@@ -32,6 +32,7 @@ export interface Measurement {
   measuredAt: Date;
   weightGrams: number;
   heightCm: number;
+  headCircumferenceCm: number;
   notes: string;
   createdAt: Date;
   updatedAt: Date;

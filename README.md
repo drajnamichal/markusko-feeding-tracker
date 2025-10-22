@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
 ![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?logo=typescript)
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase)
@@ -75,8 +75,10 @@ Moderná Progressive Web App (PWA) navrhnutá pre rodičov novorodencov, ktorá 
 #### 📏 Fyzické merania
 - Sledovanie váhy (g)
 - Sledovanie výšky (cm)
+- **Sledovanie obvodu hlavy (cm)** - NOVÉ!
 - História všetkých meraní
 - Porovnanie s hodnotami pri narodení
+- **WHO percentilové grafy** - NOVÉ!
 
 #### 📊 Štatistiky
 - Denné prehľady kŕmenia
@@ -90,6 +92,16 @@ Moderná Progressive Web App (PWA) navrhnutá pre rodičov novorodencov, ktorá 
 - Odporúčané hodnoty pre váhu a výšku podľa WHO
 - Percentily rastu
 - Vývojové míľniky
+
+#### 📈 WHO Percentilové grafy (NOVÉ!)
+- **Profesionálne sledovanie rastu** podľa WHO štandardov (2006)
+- **Tri metriky:** Váha, Výška/Dĺžka, Obvod hlavy
+- **Interaktívne grafy** s percentilmi P3, P15, P50, P85, P97
+- **Automatické vyhodnotenie** - Farebné hodnotenie stavu rastu
+- **Podpora pohlavia** - Samostatné dáta pre chlapcov a dievčatá
+- **História meraní** - Všetky merania v jednom grafe
+- **Percentilové krivky** - Porovnanie s normálnymi hodnotami
+- **Vek 0-24 mesiacov** - Kompletné pokrytie raného vývoja
 
 #### 🍼 Dávkovanie mlieka
 - Tabuľka odporúčaného príjmu podľa váhy

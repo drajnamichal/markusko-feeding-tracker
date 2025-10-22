@@ -7,6 +7,7 @@ import LogList from './components/LogList';
 import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
 import WHOGuidelines from './components/WHOGuidelines';
+import WHOPercentileCharts from './components/WHOPercentileCharts';
 import DevelopmentGuide from './components/DevelopmentGuide';
 import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
@@ -20,6 +21,7 @@ function App() {
   const [showStats, setShowStats] = useState(false);
   const [showWhiteNoise, setShowWhiteNoise] = useState(false);
   const [showWHO, setShowWHO] = useState(false);
+  const [showWHOPercentiles, setShowWHOPercentiles] = useState(false);
   const [showDevelopment, setShowDevelopment] = useState(false);
   const [showFormulaGuide, setShowFormulaGuide] = useState(false);
   const [showAIDoctor, setShowAIDoctor] = useState(false);
@@ -477,7 +479,7 @@ function App() {
     }
   };
 
-  const addMeasurement = async (weightGrams: number, heightCm: number | null, notes: string) => {
+  const addMeasurement = async (weightGrams: number, heightCm: number | null, headCircumferenceCm: number | null, notes: string) => {
     if (!babyProfile) return;
 
     const newMeasurement: Measurement = {
@@ -486,6 +488,7 @@ function App() {
       measuredAt: new Date(),
       weightGrams: weightGrams || 0,
       heightCm: heightCm || 0,
+      headCircumferenceCm: headCircumferenceCm || 0,
       notes: notes,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -721,6 +724,7 @@ function App() {
                           setShowStats(false);
                           setShowWhiteNoise(false);
                           setShowWHO(false);
+                          setShowWHOPercentiles(false);
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
                           setShowMenu(false);
@@ -737,6 +741,7 @@ function App() {
                           setShowStats(!showStats);
                           setShowWhiteNoise(false);
                           setShowWHO(false);
+                          setShowWHOPercentiles(false);
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
                           setShowAIDoctor(false);
@@ -757,12 +762,31 @@ function App() {
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
                           setShowAIDoctor(false);
+                          setShowWHOPercentiles(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWHO ? 'bg-slate-50' : ''}`}
                       >
                         <i className={`fas fa-stethoscope text-lg ${showWHO ? 'text-blue-500' : 'text-slate-400'}`}></i>
                         <span className={`font-medium ${showWHO ? 'text-blue-600' : 'text-slate-700'}`}>WHO</span>
+                      </button>
+                      
+                      {/* WHO Percentiles Button */}
+                      <button
+                        onClick={() => {
+                          setShowWHOPercentiles(!showWHOPercentiles);
+                          setShowStats(false);
+                          setShowWhiteNoise(false);
+                          setShowWHO(false);
+                          setShowDevelopment(false);
+                          setShowFormulaGuide(false);
+                          setShowAIDoctor(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showWHOPercentiles ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-chart-line text-lg ${showWHOPercentiles ? 'text-blue-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showWHOPercentiles ? 'text-blue-600' : 'text-slate-700'}`}>WHO Percentily</span>
                       </button>
                       
                       {/* Formula Guide Button */}
@@ -772,6 +796,7 @@ function App() {
                           setShowStats(false);
                           setShowWhiteNoise(false);
                           setShowWHO(false);
+                          setShowWHOPercentiles(false);
                           setShowDevelopment(false);
                           setShowAIDoctor(false);
                           setShowMenu(false);
@@ -789,6 +814,7 @@ function App() {
                           setShowStats(false);
                           setShowWhiteNoise(false);
                           setShowWHO(false);
+                          setShowWHOPercentiles(false);
                           setShowFormulaGuide(false);
                           setShowAIDoctor(false);
                           setShowMenu(false);
@@ -805,6 +831,7 @@ function App() {
                           setShowWhiteNoise(!showWhiteNoise);
                           setShowStats(false);
                           setShowWHO(false);
+                          setShowWHOPercentiles(false);
                           setShowDevelopment(false);
                           setShowFormulaGuide(false);
                           setShowAIDoctor(false);
@@ -980,14 +1007,16 @@ function App() {
                 const formData = new FormData(e.currentTarget);
                 const weightGramsStr = formData.get('weightGrams') as string;
                 const heightCmStr = formData.get('heightCm') as string;
+                const headCircumferenceCmStr = formData.get('headCircumferenceCm') as string;
                 const weightGrams = weightGramsStr ? parseInt(weightGramsStr) : 0;
                 const heightCm = heightCmStr ? parseFloat(heightCmStr) : null;
+                const headCircumferenceCm = headCircumferenceCmStr ? parseFloat(headCircumferenceCmStr) : null;
                 const notes = (formData.get('notes') as string) || '';
                 
-                if (weightGrams > 0 || (heightCm && heightCm > 0)) {
-                  addMeasurement(weightGrams, heightCm, notes);
+                if (weightGrams > 0 || (heightCm && heightCm > 0) || (headCircumferenceCm && headCircumferenceCm > 0)) {
+                  addMeasurement(weightGrams, heightCm, headCircumferenceCm, notes);
                 } else {
-                  alert('Zadajte aspoň váhu alebo výšku');
+                  alert('Zadajte aspoň jednu mieru');
                 }
               }}
             >
@@ -1022,6 +1051,22 @@ function App() {
                     min="0"
                   />
                   <p className="text-xs text-slate-500 mt-1">Pri narodení: {babyProfile.birthHeightCm}cm</p>
+                </div>
+                
+                <div>
+                  <label htmlFor="headCircumferenceCm" className="block text-sm font-medium text-slate-600 mb-2">
+                    <i className="fas fa-head-side-brain mr-2 text-pink-500"></i>Obvod hlavy (cm) <span className="text-xs text-slate-400">(voliteľné)</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="headCircumferenceCm"
+                    name="headCircumferenceCm"
+                    step="0.1"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    placeholder="Napr. 35.5"
+                    min="0"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Normálne: 32-37 cm pri narodení</p>
                 </div>
                 
                 <div>
@@ -1072,7 +1117,7 @@ function App() {
                           {new Date(measurement.measuredAt).toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <div className="flex gap-4 text-slate-600">
+                      <div className="flex gap-4 text-slate-600 flex-wrap">
                         {measurement.weightGrams > 0 && (
                           <span>
                             <i className="fas fa-weight text-pink-500 mr-1"></i>
@@ -1083,6 +1128,12 @@ function App() {
                           <span>
                             <i className="fas fa-ruler-vertical text-pink-500 mr-1"></i>
                             {measurement.heightCm}cm
+                          </span>
+                        )}
+                        {measurement.headCircumferenceCm > 0 && (
+                          <span>
+                            <i className="fas fa-head-side-brain text-pink-500 mr-1"></i>
+                            {measurement.headCircumferenceCm}cm
                           </span>
                         )}
                       </div>
@@ -1361,6 +1412,8 @@ function App() {
                 sleepSessions={sleepSessions}
               />
             ) : <div>Loading...</div>
+          ) : showWHOPercentiles ? (
+            babyProfile ? <WHOPercentileCharts babyProfile={babyProfile} measurements={measurements} /> : <div>Loading...</div>
           ) : showDevelopment ? (
             babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <div>Loading...</div>
           ) : showWHO ? (

@@ -5,6 +5,106 @@ Všetky významné zmeny v projekte budú dokumentované v tomto súbore.
 Formát je založený na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 a tento projekt dodržiava [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-10-22
+
+### 🆕 Pridané
+
+#### WHO Percentilové grafy
+- **WHO Percentilové grafy** - Profesionálne sledovanie rastu dieťaťa podľa WHO štandardov
+- **Tri metriky:**
+  - 📈 **Váha podľa veku** - Sledovanie váhového prírastku (kg)
+  - 📏 **Výška/Dĺžka podľa veku** - Sledovanie výškového rastu (cm)
+  - 👶 **Obvod hlavy podľa veku** - Nová metrika pre komplexnejšie sledovanie (cm)
+- **Percentily:** P3, P15, P50 (medián), P85, P97
+- **Vizualizácia:**
+  - Interaktívne grafy s Recharts
+  - Percentilové krivky pre porovnanie
+  - Detekcia a zvýraznenie aktuálneho veku
+  - História všetkých meraní v grafe
+- **Automatické vyhodnotenie:**
+  - Výpočet aktuálneho percentilu dieťaťa
+  - Farebné hodnotenie (zelená = v norme, žltá = mierne mimo, červená = konzultovať lekára)
+  - Jasné oznámenia o stave rastu
+- **Podpora pohlavia:**
+  - Samostatné percentilové dáta pre chlapcov a dievčatá
+  - Možnosť prepínania pohlavia
+  - Lokálne uloženie nastavenia
+- **Tabuľka histórie:**
+  - Prehľad všetkých meraní s percentilmi
+  - Vek pri každom meraní
+  - Všetky tri metriky v jednej tabuľke
+
+#### Obvod hlavy
+- **Nové pole v meraniach** - `headCircumferenceCm` v Measurement type
+- **Databázová migrácia** - `add_head_circumference_field.sql`
+- **Aktualizovaný formulár** - Pole pre zadanie obvodu hlavy pri meraní
+- **Zobrazenie v histórii** - Obvod hlavy zobrazený v posledných meraniach
+
+#### WHO Dáta
+- **Reálne WHO dáta (2006)** - Oficiálne WHO Child Growth Standards
+- **Vekové rozpätie:** 0-24 mesiacov
+- **Presné percentily:** P3, P15, P50, P85, P97
+- **Kalkulátor percentilu** - Automatický výpočet percentilu pre akúkoľvek hodnotu
+
+### 🔧 Technické detaily
+
+#### Nové súbory
+- `components/WHOPercentileCharts.tsx` - Hlavný komponent pre percentilové grafy
+- `whoData.ts` - WHO percentilové dáta a utility funkcie
+- `supabase-migrations/add_head_circumference_field.sql` - DB migrácia
+
+#### Aktualizované súbory
+- `types.ts` - Pridané `headCircumferenceCm` do `Measurement`
+- `supabaseClient.ts` - Aktualizované `MeasurementDB` a konverzie
+- `App.tsx`:
+  - Import `WHOPercentileCharts`
+  - Pridaný state `showWHOPercentiles`
+  - Aktualizovaná funkcia `addMeasurement` (nový parameter)
+  - Nové menu položky
+  - Podmienené renderovanie komponentu
+  - Aktualizovaný formulár pre merania
+  - Zobrazenie obvodu hlavy v histórii meraní
+
+### 📊 Funkcionality
+
+#### WHO Percentilové grafy
+1. **Tri typy grafov:**
+   - Váha-pre-vek (weight-for-age)
+   - Výška-pre-vek (length-for-age)
+   - Obvod hlavy-pre-vek (head circumference-for-age)
+
+2. **Status karta:**
+   - Aktuálna hodnota metriky
+   - Vek dieťaťa v mesiacoch
+   - Percentil s farebným hodnotením
+   - Jasné hodnotenie stavu
+
+3. **Interaktívny graf:**
+   - 5 percentilových kriviek (P3, P15, P50, P85, P97)
+   - Body s meraniami dieťaťa
+   - Vertikálna čiara pre aktuálny vek
+   - Tooltip s detailmi
+   - Legenda
+
+4. **Informačný box:**
+   - Vysvetlenie percentilov
+   - Odporúčania
+   - WHO štandardy
+
+### 🎨 UI/UX Vylepšenia
+- 🎨 **Farebné rozlíšenie:** Zelená (norma), Žltá (pozor), Červená (konzultovať)
+- 📱 **Responzívny dizajn:** Funguje na mobile aj desktop
+- 🔄 **Prepínanie metrík:** Jednoduché tlačidlá pre váhu/výšku/obvod hlavy
+- ⚥ **Výber pohlavia:** Modal s ikonami pre chlapcov/dievčatá
+- 📊 **História meraní:** Tabuľka s posledných 10 meraní
+
+### 🔒 Bezpečnosť a súkromie
+- 🔐 Všetky dáta lokálne v Supabase databáze
+- 💾 Pohlavie uložené lokálne v localStorage
+- 🚫 Žiadne externé API volania (okrem Supabase)
+
+---
+
 ## [1.1.0] - 2025-10-21
 
 ### 🆕 Pridané
