@@ -1,5 +1,6 @@
 import React from 'react';
 import type { LogEntry } from '../types';
+import { hapticLight } from '../utils/haptic';
 
 interface QuickAddButtonsProps {
   onQuickAdd: (entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => void;
@@ -8,6 +9,7 @@ interface QuickAddButtonsProps {
 const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
   
   const quickAddFeeding = (ml: number, isFormula: boolean = false) => {
+    hapticLight();
     const now = new Date();
     const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
       dateTime: now.toISOString(),
@@ -28,6 +30,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
   };
 
   const quickAddDiaper = (type: 'pee' | 'poop' | 'both') => {
+    hapticLight();
     const now = new Date();
     const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
       dateTime: now.toISOString(),
@@ -48,6 +51,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
   };
 
   const quickAddBreastfeeding = () => {
+    hapticLight();
     const now = new Date();
     const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
       dateTime: now.toISOString(),
@@ -131,6 +135,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         {/* Vitamin D */}
         <button
           onClick={() => {
+            hapticLight();
             const now = new Date();
             const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
               dateTime: now.toISOString(),
@@ -158,6 +163,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         {/* SAB Simplex */}
         <button
           onClick={() => {
+            hapticLight();
             const now = new Date();
             const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
               dateTime: now.toISOString(),

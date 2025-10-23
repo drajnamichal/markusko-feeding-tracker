@@ -16,6 +16,7 @@ import AIDoctor from './components/AIDoctor';
 import QuickAddButtons from './components/QuickAddButtons';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
+import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
@@ -377,6 +378,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading entries:', error);
+      hapticError();
       toast.error('Chyba pri načítaní dát z databázy');
     } finally {
       setLoading(false);
@@ -414,9 +416,11 @@ function App() {
       if (error) throw error;
 
       setEntries(prevEntries => [entryWithDate, ...prevEntries].sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()));
+      hapticSuccess();
       toast.success('Záznam pridaný');
     } catch (error) {
       console.error('Error adding entry:', error);
+      hapticError();
       toast.error('Chyba pri pridávaní záznamu');
     }
   };
@@ -425,6 +429,7 @@ function App() {
     // Find the entry before deleting
     const entryToDelete = entries.find(entry => entry.id === id);
     if (!entryToDelete) {
+      hapticError();
       toast.error('Záznam nenájdený');
       return;
     }
@@ -453,14 +458,17 @@ function App() {
 
           // Add back to state
           setEntries(prevEntries => [entryToDelete, ...prevEntries].sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()));
+          hapticSuccess();
           toast.success('Záznam obnovený');
         } catch (undoError) {
           console.error('Error restoring entry:', undoError);
+          hapticError();
           toast.error('Chyba pri obnovení záznamu');
         }
       });
     } catch (error) {
       console.error('Error deleting entry:', error);
+      hapticError();
       toast.error('Chyba pri mazaní záznamu');
     }
   };
@@ -481,9 +489,11 @@ function App() {
         ).sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime())
       );
       setEditingEntry(null);
+      hapticSuccess();
       toast.success('Záznam aktualizovaný');
     } catch (error) {
       console.error('Error updating entry:', error);
+      hapticError();
       toast.error('Chyba pri aktualizácii záznamu');
     }
   };
@@ -508,9 +518,11 @@ function App() {
 
       setBabyProfile(updatedProfile);
       setShowProfileModal(false);
+      hapticSuccess();
       toast.success('Profil aktualizovaný');
     } catch (error) {
       console.error('Error updating baby profile:', error);
+      hapticError();
       toast.error('Chyba pri aktualizácii profilu');
     }
   };
@@ -540,9 +552,11 @@ function App() {
 
       setMeasurements(prev => [newMeasurement, ...prev]);
       setShowMeasurementModal(false);
+      hapticSuccess();
       toast.success('Meranie pridané');
     } catch (error) {
       console.error('Error adding measurement:', error);
+      hapticError();
       toast.error('Chyba pri pridávaní merania');
     }
   };
@@ -563,9 +577,11 @@ function App() {
       );
       setEditingMeasurement(null);
       setShowMeasurementModal(false);
+      hapticSuccess();
       toast.success('Meranie aktualizované');
     } catch (error) {
       console.error('Error updating measurement:', error);
+      hapticError();
       toast.error('Chyba pri aktualizácii merania');
     }
   };
@@ -582,9 +598,11 @@ function App() {
       if (error) throw error;
 
       setMeasurements(prev => prev.filter(m => m.id !== id));
+      hapticMedium();
       toast.success('Meranie vymazané');
     } catch (error) {
       console.error('Error deleting measurement:', error);
+      hapticError();
       toast.error('Chyba pri mazaní merania');
     }
   };
@@ -685,9 +703,11 @@ function App() {
 
       setSleepSessions(prev => [newSession, ...prev]);
       setShowSleepTracker(false);
+      hapticSuccess();
       toast.success('Spánok uložený');
     } catch (error) {
       console.error('Error saving sleep session:', error);
+      hapticError();
       toast.error('Chyba pri ukladaní spánku');
     }
   };
