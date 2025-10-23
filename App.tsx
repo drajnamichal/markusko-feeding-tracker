@@ -1427,159 +1427,225 @@ function App() {
         <div className="container mx-auto px-4 pt-4 space-y-3">
 
         {showTummyTimeReminder && (
-          <div className="bg-indigo-50 rounded-lg p-2.5 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-2">
-              <i className="fas fa-baby text-xl text-indigo-500"></i>
-              <p className="text-sm text-indigo-800">
-                <span className="font-semibold">Tummy Time:</span> {tummyTimeCount}/3
-                {tummyTimeCount < 3 && <span className="text-indigo-600 ml-1">(ešte {3 - tummyTimeCount}x)</span>}
-              </p>
+          <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-baby text-3xl text-indigo-500"></i>
+              <div>
+                <p className="font-bold text-indigo-800">Pripomienka: Tummy Time</p>
+                <p className="text-sm text-indigo-700">
+                  Dnes: {tummyTimeCount}/3 | Ešte potrebujete: <span className="font-bold">{3 - tummyTimeCount}x</span>
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setShowTummyTimeReminder(false)}
-              className="text-indigo-400 hover:text-indigo-600 transition-colors"
-              aria-label="Zavrieť"
+              className="text-indigo-500 hover:text-indigo-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
             >
-              <i className="fas fa-times text-sm"></i>
+              <i className="fas fa-times text-xl"></i>
             </button>
           </div>
         )}
 
         {showSterilizationReminder && (
-          <div className="bg-cyan-50 rounded-lg p-2.5 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-2">
-              <i className="fas fa-flask text-xl text-cyan-500"></i>
-              <p className="text-sm text-cyan-800">
-                <span className="font-semibold">Sterilizácia fliaš</span>
-                <span className="text-cyan-600 ml-1">(po {daysSinceLastSterilization} dňoch)</span>
-              </p>
+          <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-flask text-3xl text-cyan-500"></i>
+              <div>
+                <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fliaš</p>
+                <p className="text-sm text-cyan-700">Čas na novú sterilizáciu!</p>
+              </div>
             </div>
             <button
               onClick={() => setShowSterilizationReminder(false)}
-              className="text-cyan-400 hover:text-cyan-600 transition-colors"
-              aria-label="Zavrieť"
+              className="text-cyan-500 hover:text-cyan-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
             >
-              <i className="fas fa-times text-sm"></i>
+              <i className="fas fa-times text-xl"></i>
             </button>
           </div>
         )}
 
         {/* SAB Simplex - Initial reminder (no doses today) */}
         {sabSimplexTodayCount === 0 && (
-          <div className="bg-purple-50 rounded-lg p-2.5 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-2">
-              <i className="fas fa-pills text-xl text-purple-500"></i>
-              <p className="text-sm text-purple-800">
-                <span className="font-semibold">SAB Simplex</span>
-                <span className="text-purple-600 ml-1">(10 kvapiek, 4x denne)</span>
-              </p>
+          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-pills text-3xl text-purple-500"></i>
+              <div>
+                <p className="font-bold text-purple-800">💊 Nezabudni dať SAB Simplex</p>
+                <p className="text-sm text-purple-700">10 kvapiek do mlieka</p>
+                <p className="text-xs text-purple-600 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Dávkovanie: 4x denne, každé 4 hodiny
+                </p>
+              </div>
             </div>
+            <button
+              onClick={() => {/* User will add entry */}}
+              className="text-purple-500 hover:text-purple-700 transition-colors"
+              aria-label="Info"
+            >
+              <i className="fas fa-info-circle text-xl"></i>
+            </button>
           </div>
         )}
 
         {/* SAB Simplex - Tracking widget (after first dose) */}
         {sabSimplexTodayCount > 0 && (
-          <div className="bg-purple-50 rounded-lg p-2.5 shadow-sm">
-            <div className="flex items-center gap-2">
-              <i className="fas fa-pills text-xl text-purple-500"></i>
-              <div className="flex-1 text-sm text-purple-800">
-                <span className="font-semibold">SAB Simplex:</span> {sabSimplexTodayCount}/4
-                {sabSimplexTodayCount < 4 && <span className="text-purple-600 ml-1">(ešte {4 - sabSimplexTodayCount}x)</span>}
-                {hoursSinceLastSabSimplex !== null && (
-                  <span className="ml-2 text-purple-700">
-                    | {hoursSinceLastSabSimplex.toFixed(1)}h
-                    {hoursSinceLastSabSimplex >= 4 ? (
-                      <span className="text-green-600 font-semibold ml-1">✓</span>
-                    ) : (
-                      <span className="text-amber-600 ml-1">(za {(4 - hoursSinceLastSabSimplex).toFixed(1)}h)</span>
+          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-pills text-3xl text-purple-500"></i>
+              <div className="flex-1">
+                <p className="font-bold text-purple-800 mb-1">💊 SAB Simplex</p>
+                <div className="text-sm text-purple-700 space-y-1">
+                  <p>
+                    Dnes: <span className="font-bold text-lg">{sabSimplexTodayCount}/4</span> dávok
+                    {sabSimplexTodayCount < 4 && (
+                      <span className="ml-2">(ešte {4 - sabSimplexTodayCount}x)</span>
                     )}
-                  </span>
-                )}
+                  </p>
+                  {hoursSinceLastSabSimplex !== null && (
+                    <p>
+                      Od poslednej dávky: <span className="font-bold">{hoursSinceLastSabSimplex.toFixed(1)}h</span>
+                      {hoursSinceLastSabSimplex >= 4 ? (
+                        <span className="ml-2 text-green-600 font-bold">✓ Môžete podať ďalšiu dávku</span>
+                      ) : (
+                        <span className="ml-2 text-amber-600">
+                          Ďalšia dávka za {(4 - hoursSinceLastSabSimplex).toFixed(1)}h
+                        </span>
+                      )}
+                    </p>
+                  )}
+                  <p className="text-xs text-purple-600 mt-2">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    Dávkovanie: 4x10 kvapiek do mlieka (každé 4 hodiny)
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {showBathingReminder && (
-          <div className="bg-blue-50 rounded-lg p-2.5 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-2">
-              <i className="fas fa-bath text-xl text-blue-500"></i>
-              <p className="text-sm text-blue-800">
-                <span className="font-semibold">Kúpanie</span>
-                <span className="text-blue-600 ml-1">
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-bath text-3xl text-blue-500"></i>
+              <div>
+                <p className="font-bold text-blue-800">Pripomienka: Kúpanie</p>
+                <p className="text-sm text-blue-700">
                   {daysSinceLastBathing >= 999 
-                    ? '(nezaznamenané)' 
-                    : `(po ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dni' : 'dňoch'})`
+                    ? 'Ešte ste nezaznamenali kúpanie!' 
+                    : `Posledné kúpanie pred ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dňom' : 'dňami'}. Čas na kúpanie!`
                   }
-                </span>
-              </p>
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setShowBathingReminder(false)}
-              className="text-blue-400 hover:text-blue-600 transition-colors"
-              aria-label="Zavrieť"
+              className="text-blue-500 hover:text-blue-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
             >
-              <i className="fas fa-times text-sm"></i>
+              <i className="fas fa-times text-xl"></i>
             </button>
           </div>
         )}
 
-        {/* Daily Milk Intake Widget - Compact */}
+        {/* Daily Milk Intake Widget */}
         {todayMilkIntake.weight > 0 && (
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3 rounded-lg shadow-md">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs opacity-90">
-                <i className="fas fa-chart-line mr-1"></i>
-                Denný príjem ({todayMilkIntake.weight}g)
-              </p>
-              <i className="fas fa-baby-bottle text-2xl opacity-60"></i>
-            </div>
-            <div className="flex items-baseline gap-2 mb-2">
-              <p className="text-2xl font-bold">
-                {todayMilkIntake.current}
-              </p>
-              <p className="text-sm opacity-90">
-                / {todayMilkIntake.target150}-{todayMilkIntake.target180} ml
-              </p>
-            </div>
-            {/* Progress bar */}
-            <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-              <div 
-                className="bg-white h-full rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${Math.min(100, (todayMilkIntake.current / todayMilkIntake.target180) * 100)}%` 
-                }}
-              ></div>
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-xl shadow-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm opacity-90 mb-1">
+                  <i className="fas fa-chart-line mr-2"></i>
+                  Denný príjem mlieka (váha: {todayMilkIntake.weight}g)
+                </p>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <p className="text-4xl font-bold">
+                    {todayMilkIntake.current} ml
+                  </p>
+                  <p className="text-lg opacity-90">
+                    / {todayMilkIntake.target150}-{todayMilkIntake.target180} ml
+                  </p>
+                </div>
+                
+                {/* Progress bar */}
+                <div className="w-full bg-white/20 rounded-full h-3 mb-2 overflow-hidden">
+                  <div 
+                    className="bg-white h-full rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${Math.min(100, (todayMilkIntake.current / todayMilkIntake.target180) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                
+                {/* Status text */}
+                <div className="flex items-center gap-2 text-sm">
+                  {todayMilkIntake.current < todayMilkIntake.target150 ? (
+                    <>
+                      <i className="fas fa-arrow-up"></i>
+                      <span>Potrebujete ešte {todayMilkIntake.target150 - todayMilkIntake.current} ml (minimum)</span>
+                    </>
+                  ) : todayMilkIntake.current < todayMilkIntake.target180 ? (
+                    <>
+                      <i className="fas fa-check-circle"></i>
+                      <span>V norme! Môžete pridať až {todayMilkIntake.target180 - todayMilkIntake.current} ml</span>
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-check-circle"></i>
+                      <span>Cieľ splnený!</span>
+                    </>
+                  )}
+                </div>
+                
+                {/* Calculation info */}
+                <div className="border-t border-white/20 pt-2 mt-2">
+                  <p className="text-xs opacity-75">
+                    <i className="fas fa-info-circle mr-1"></i>
+                    Odporúčaný denný príjem: 150-180 ml/kg (8 dávok/deň)
+                  </p>
+                </div>
+              </div>
+              <div className="text-5xl opacity-80">
+                <i className="fas fa-baby-bottle"></i>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Last Bottle Feeding - Compact */}
+        {/* Last Bottle Feeding Stopwatch */}
         {lastBottleFeedingData && (() => {
           const nextFeedingTime = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (2 * 60 * 60 * 1000));
           return (
-            <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-3 rounded-lg shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs opacity-90">
-                  <i className="fas fa-bottle-baby mr-1"></i>
-                  Posledné kŕmenie fľašou
-                </p>
-                <i className="fas fa-stopwatch text-2xl opacity-60"></i>
+            <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm opacity-90 mb-1">
+                    <i className="fas fa-bottle-baby mr-2"></i>
+                    Posledné kŕmenie fľašou
+                  </p>
+                  <p className="text-4xl font-bold mb-2">
+                    {lastBottleFeedingData.hours}h {lastBottleFeedingData.minutes}m
+                  </p>
+                  <p className="text-sm opacity-90 mb-2">
+                    <i className="fas fa-clock mr-1"></i>
+                    {lastBottleFeedingData.entry.dateTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                    {' | '}
+                    {lastBottleFeedingData.entry.breastMilkMl > 0 && `${lastBottleFeedingData.entry.breastMilkMl}ml materské`}
+                    {lastBottleFeedingData.entry.breastMilkMl > 0 && lastBottleFeedingData.entry.formulaMl > 0 && ' + '}
+                    {lastBottleFeedingData.entry.formulaMl > 0 && `${lastBottleFeedingData.entry.formulaMl}ml umelé`}
+                  </p>
+                  <div className="border-t border-white/20 pt-2 mt-2">
+                    <p className="text-sm opacity-90">
+                      <i className="fas fa-clock mr-1"></i>
+                      <span className="font-semibold">Nasledujúce kŕmenie:</span> {nextFeedingTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-5xl opacity-80">
+                  <i className="fas fa-stopwatch"></i>
+                </div>
               </div>
-              <div className="flex items-baseline gap-2 mb-1">
-                <p className="text-2xl font-bold">
-                  {lastBottleFeedingData.hours}h {lastBottleFeedingData.minutes}m
-                </p>
-                <p className="text-xs opacity-75">
-                  {lastBottleFeedingData.entry.breastMilkMl > 0 && `${lastBottleFeedingData.entry.breastMilkMl}ml`}
-                  {lastBottleFeedingData.entry.breastMilkMl > 0 && lastBottleFeedingData.entry.formulaMl > 0 && '+'}
-                  {lastBottleFeedingData.entry.formulaMl > 0 && `${lastBottleFeedingData.entry.formulaMl}ml`}
-                </p>
-              </div>
-              <p className="text-xs opacity-90 border-t border-white/20 pt-1.5">
-                <i className="fas fa-clock mr-1"></i>
-                Ďalšie: {nextFeedingTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
-              </p>
             </div>
           );
         })()}
