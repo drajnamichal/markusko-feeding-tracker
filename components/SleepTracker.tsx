@@ -15,6 +15,34 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
   const [seconds, setSeconds] = useState(0);
   const [saveButtonState, setSaveButtonState] = useState<ButtonState>('idle');
 
+  // Load saved state from localStorage on mount
+  useEffect(() => {
+    const savedStartTime = localStorage.getItem('sleepTracker_startTime');
+    const savedIsTracking = localStorage.getItem('sleepTracker_isTracking');
+    
+    if (savedStartTime && savedIsTracking === 'true') {
+      const loadedStartTime = new Date(savedStartTime);
+      setStartTime(loadedStartTime);
+      setIsTracking(true);
+      
+      // Calculate elapsed time
+      const elapsed = Math.floor((new Date().getTime() - loadedStartTime.getTime()) / 1000);
+      setSeconds(elapsed);
+    }
+  }, []);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (isTracking && startTime) {
+      localStorage.setItem('sleepTracker_startTime', startTime.toISOString());
+      localStorage.setItem('sleepTracker_isTracking', 'true');
+    } else {
+      localStorage.removeItem('sleepTracker_startTime');
+      localStorage.removeItem('sleepTracker_isTracking');
+    }
+  }, [isTracking, startTime]);
+
+  // Timer interval
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
 
@@ -42,6 +70,10 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
     setStartTime(now);
     setIsTracking(true);
     setSeconds(0);
+    
+    // Save to localStorage
+    localStorage.setItem('sleepTracker_startTime', now.toISOString());
+    localStorage.setItem('sleepTracker_isTracking', 'true');
   };
 
   const handleStop = async () => {
@@ -62,6 +94,10 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
         setIsTracking(false);
         setStartTime(null);
         setSeconds(0);
+        
+        // Clear localStorage
+        localStorage.removeItem('sleepTracker_startTime');
+        localStorage.removeItem('sleepTracker_isTracking');
       } catch (error) {
         setSaveButtonState('idle');
       }
@@ -72,6 +108,10 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
     setIsTracking(false);
     setStartTime(null);
     setSeconds(0);
+    
+    // Clear localStorage
+    localStorage.removeItem('sleepTracker_startTime');
+    localStorage.removeItem('sleepTracker_isTracking');
   };
 
   return (
@@ -91,8 +131,8 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
         </div>
 
         {/* Timer Display */}
-        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-8 mb-6 text-center">
-          <div className="text-6xl font-bold text-white mb-2 font-mono">
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 mb-6 text-center">
+          <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-2 font-mono tracking-tight">
             {formatTime(seconds)}
           </div>
           <p className="text-indigo-100 text-sm">
