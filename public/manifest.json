@@ -1,6 +1,7 @@
 {
   "name": "Sledovanie kŕmenia Markusíka",
   "short_name": "Markusík",
+  "version": "1.1.0",
   "description": "Moderná aplikácia na sledovanie kŕmenia, plienok a aktivít bábätka",
   "start_url": "/",
   "display": "standalone",

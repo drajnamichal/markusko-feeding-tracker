@@ -1,4 +1,4 @@
-const CACHE_NAME = 'markusik-tracker-v28';
+const CACHE_NAME = 'markusik-tracker-v29-loading-states';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -19,30 +19,55 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - NETWORK FIRST for HTML/JS, cache for assets
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Network first for HTML, JS, CSS (always get latest code)
+  if (
+    event.request.method === 'GET' &&
+    (url.pathname.endsWith('.html') || 
+     url.pathname.endsWith('.js') || 
+     url.pathname.endsWith('.css') ||
+     url.pathname === '/' ||
+     url.pathname.includes('/assets/'))
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache the new version
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Cache first for images, icons, fonts
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
 
         return fetch(event.request).then(
           (response) => {
-            // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 
-            // Clone the response
             const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
 
             return response;
           }
