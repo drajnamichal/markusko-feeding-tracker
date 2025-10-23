@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import type { LogEntry } from '../types';
 
 interface EntryFormProps {
-  onAddEntry: (entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => void;
+  onAddEntry: (entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => Promise<void>;
   editingEntry?: LogEntry | null;
-  onUpdateEntry?: (entry: LogEntry) => void;
+  onUpdateEntry?: (entry: LogEntry) => Promise<void>;
   onCancelEdit?: () => void;
 }
+
+type ButtonState = 'idle' | 'loading' | 'success';
 
 const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdateEntry, onCancelEdit }) => {
   const now = new Date();
@@ -27,6 +29,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
   const [breastMilkMl, setBreastMilkMl] = useState('');
   const [formulaMl, setFormulaMl] = useState('');
   const [notes, setNotes] = useState('');
+  const [saveButtonState, setSaveButtonState] = useState<ButtonState>('idle');
 
   // Populate form when editing
   React.useEffect(() => {
@@ -49,48 +52,59 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
     }
   }, [editingEntry]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaveButtonState('loading');
 
-    if (editingEntry && onUpdateEntry) {
-      // Update existing entry
-      onUpdateEntry({
-        ...editingEntry,
-        dateTime: new Date(dateTime),
-        poop,
-        pee,
-        breastfed,
-        vomit,
-        vitaminD,
-        tummyTime,
-        sterilization,
-        bathing,
-        sabSimplex,
-        breastMilkMl: Number(breastMilkMl) || 0,
-        formulaMl: Number(formulaMl) || 0,
-        notes,
-      });
-    } else {
-      // Add new entry
-      onAddEntry({
-        dateTime,
-        poop,
-        pee,
-        breastfed,
-        vomit,
-        vitaminD,
-        tummyTime,
-        sterilization,
-        bathing,
-        sabSimplex,
-        breastMilkMl: Number(breastMilkMl) || 0,
-        formulaMl: Number(formulaMl) || 0,
-        notes,
-      });
+    try {
+      if (editingEntry && onUpdateEntry) {
+        // Update existing entry
+        await onUpdateEntry({
+          ...editingEntry,
+          dateTime: new Date(dateTime),
+          poop,
+          pee,
+          breastfed,
+          vomit,
+          vitaminD,
+          tummyTime,
+          sterilization,
+          bathing,
+          sabSimplex,
+          breastMilkMl: Number(breastMilkMl) || 0,
+          formulaMl: Number(formulaMl) || 0,
+          notes,
+        });
+      } else {
+        // Add new entry
+        await onAddEntry({
+          dateTime,
+          poop,
+          pee,
+          breastfed,
+          vomit,
+          vitaminD,
+          tummyTime,
+          sterilization,
+          bathing,
+          sabSimplex,
+          breastMilkMl: Number(breastMilkMl) || 0,
+          formulaMl: Number(formulaMl) || 0,
+          notes,
+        });
+      }
+
+      setSaveButtonState('success');
+      setTimeout(() => {
+        setSaveButtonState('idle');
+      }, 1500);
+
+      // Reset form
+      resetForm();
+    } catch (error) {
+      setSaveButtonState('idle');
+      // Error is already handled by parent component
     }
-
-    // Reset form
-    resetForm();
   };
 
   const resetForm = () => {
@@ -199,15 +213,39 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
         </div>
         
         <div className="flex gap-2">
-          <button type="submit" className="flex-1 bg-teal-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 ease-in-out shadow-md">
-            <i className={`fas ${editingEntry ? 'fa-check' : 'fa-plus'} mr-2`}></i> 
-            {editingEntry ? 'Uložiť' : 'Pridať záznam'}
+          <button 
+            type="submit" 
+            disabled={saveButtonState === 'loading' || saveButtonState === 'success'}
+            className={`
+              flex-1 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out shadow-md
+              ${saveButtonState === 'loading' ? 'bg-slate-400 cursor-wait' : saveButtonState === 'success' ? 'bg-green-500' : 'bg-teal-500 hover:bg-teal-600 focus:ring-teal-500'}
+            `}
+          >
+            {saveButtonState === 'loading' && (
+              <>
+                <i className="fas fa-spinner fa-spin mr-2"></i>
+                {editingEntry ? 'Ukladám...' : 'Pridávam...'}
+              </>
+            )}
+            {saveButtonState === 'success' && (
+              <>
+                <i className="fas fa-check mr-2"></i>
+                {editingEntry ? 'Uložené!' : 'Pridané!'}
+              </>
+            )}
+            {saveButtonState === 'idle' && (
+              <>
+                <i className={`fas ${editingEntry ? 'fa-check' : 'fa-plus'} mr-2`}></i> 
+                {editingEntry ? 'Uložiť' : 'Pridať záznam'}
+              </>
+            )}
           </button>
           {editingEntry && (
             <button 
               type="button" 
               onClick={handleCancel}
-              className="px-4 py-3 bg-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all duration-200 ease-in-out shadow-md"
+              disabled={saveButtonState === 'loading' || saveButtonState === 'success'}
+              className="px-4 py-3 bg-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all duration-200 ease-in-out shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <i className="fas fa-times"></i>
             </button>

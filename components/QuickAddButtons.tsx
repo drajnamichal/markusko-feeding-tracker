@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { LogEntry } from '../types';
 import { hapticLight } from '../utils/haptic';
 
 interface QuickAddButtonsProps {
-  onQuickAdd: (entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => void;
+  onQuickAdd: (entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => Promise<void>;
 }
 
+type ButtonState = 'idle' | 'loading' | 'success';
+
 const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
+  const [buttonStates, setButtonStates] = useState<Record<string, ButtonState>>({});
   
-  const quickAddFeeding = (ml: number, isFormula: boolean = false) => {
+  const quickAddFeeding = async (ml: number, isFormula: boolean = false) => {
+    const buttonId = `feeding-${isFormula ? 'formula' : 'breast'}-${ml}`;
     hapticLight();
+    setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
+    
     const now = new Date();
     const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
       dateTime: now.toISOString(),
@@ -26,11 +32,20 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       sabSimplex: false,
       notes: `Rýchle pridanie: ${isFormula ? 'Umelé' : 'Materské'} mlieko ${ml}ml`,
     };
-    onQuickAdd(entry);
+    
+    await onQuickAdd(entry);
+    
+    setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+    setTimeout(() => {
+      setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+    }, 1500);
   };
 
-  const quickAddDiaper = (type: 'pee' | 'poop' | 'both') => {
+  const quickAddDiaper = async (type: 'pee' | 'poop' | 'both') => {
+    const buttonId = `diaper-${type}`;
     hapticLight();
+    setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
+    
     const now = new Date();
     const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
       dateTime: now.toISOString(),
@@ -47,11 +62,20 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       sabSimplex: false,
       notes: type === 'both' ? 'Rýchle pridanie: Moč + Stolica' : type === 'pee' ? 'Rýchle pridanie: Moč' : 'Rýchle pridanie: Stolica',
     };
-    onQuickAdd(entry);
+    
+    await onQuickAdd(entry);
+    
+    setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+    setTimeout(() => {
+      setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+    }, 1500);
   };
 
-  const quickAddBreastfeeding = () => {
+  const quickAddBreastfeeding = async () => {
+    const buttonId = 'breastfeeding';
     hapticLight();
+    setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
+    
     const now = new Date();
     const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
       dateTime: now.toISOString(),
@@ -68,7 +92,50 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       sabSimplex: false,
       notes: 'Rýchle pridanie: Dojčenie',
     };
-    onQuickAdd(entry);
+    
+    await onQuickAdd(entry);
+    
+    setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+    setTimeout(() => {
+      setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+    }, 1500);
+  };
+
+  const getButtonClass = (buttonId: string, baseClass: string) => {
+    const state = buttonStates[buttonId] || 'idle';
+    if (state === 'loading') {
+      return `${baseClass} opacity-70 cursor-wait`;
+    }
+    if (state === 'success') {
+      return `${baseClass} bg-green-500/30 border-green-400`;
+    }
+    return baseClass;
+  };
+
+  const getButtonContent = (buttonId: string, icon: string, label: string) => {
+    const state = buttonStates[buttonId] || 'idle';
+    if (state === 'loading') {
+      return (
+        <>
+          <i className="fas fa-spinner fa-spin text-2xl"></i>
+          <span className="text-xs font-semibold">Pridávam...</span>
+        </>
+      );
+    }
+    if (state === 'success') {
+      return (
+        <>
+          <i className="fas fa-check text-2xl"></i>
+          <span className="text-xs font-semibold">Pridané!</span>
+        </>
+      );
+    }
+    return (
+      <>
+        <i className={`${icon} text-2xl`}></i>
+        <span className="text-xs font-semibold">{label}</span>
+      </>
+    );
   };
 
   return (
@@ -85,57 +152,59 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         {/* Feeding Buttons */}
         <button
           onClick={() => quickAddFeeding(90, false)}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['feeding-breast-90'] === 'loading' || buttonStates['feeding-breast-90'] === 'success'}
+          className={getButtonClass('feeding-breast-90', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-bottle-droplet text-2xl"></i>
-          <span className="text-xs font-semibold">Materské 90ml</span>
+          {getButtonContent('feeding-breast-90', 'fas fa-bottle-droplet', 'Materské 90ml')}
         </button>
 
         <button
           onClick={() => quickAddFeeding(90, true)}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['feeding-formula-90'] === 'loading' || buttonStates['feeding-formula-90'] === 'success'}
+          className={getButtonClass('feeding-formula-90', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-prescription-bottle text-2xl"></i>
-          <span className="text-xs font-semibold">Umelé 90ml</span>
+          {getButtonContent('feeding-formula-90', 'fas fa-prescription-bottle', 'Umelé 90ml')}
         </button>
 
         <button
           onClick={quickAddBreastfeeding}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['breastfeeding'] === 'loading' || buttonStates['breastfeeding'] === 'success'}
+          className={getButtonClass('breastfeeding', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-heart text-2xl"></i>
-          <span className="text-xs font-semibold">Dojčenie</span>
+          {getButtonContent('breastfeeding', 'fas fa-heart', 'Dojčenie')}
         </button>
 
         {/* Diaper Buttons */}
         <button
           onClick={() => quickAddDiaper('pee')}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['diaper-pee'] === 'loading' || buttonStates['diaper-pee'] === 'success'}
+          className={getButtonClass('diaper-pee', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-tint text-2xl"></i>
-          <span className="text-xs font-semibold">Moč</span>
+          {getButtonContent('diaper-pee', 'fas fa-tint', 'Moč')}
         </button>
 
         <button
           onClick={() => quickAddDiaper('poop')}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['diaper-poop'] === 'loading' || buttonStates['diaper-poop'] === 'success'}
+          className={getButtonClass('diaper-poop', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-poo text-2xl"></i>
-          <span className="text-xs font-semibold">Stolica</span>
+          {getButtonContent('diaper-poop', 'fas fa-poo', 'Stolica')}
         </button>
 
         <button
           onClick={() => quickAddDiaper('both')}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['diaper-both'] === 'loading' || buttonStates['diaper-both'] === 'success'}
+          className={getButtonClass('diaper-both', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-baby text-2xl"></i>
-          <span className="text-xs font-semibold">Moč + Stolica</span>
+          {getButtonContent('diaper-both', 'fas fa-baby', 'Moč + Stolica')}
         </button>
 
         {/* Vitamin D */}
         <button
-          onClick={() => {
+          onClick={async () => {
+            const buttonId = 'vitamin-d';
             hapticLight();
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
             const now = new Date();
             const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
               dateTime: now.toISOString(),
@@ -152,18 +221,24 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
               sabSimplex: false,
               notes: 'Rýchle pridanie: Vitamín D',
             };
-            onQuickAdd(entry);
+            await onQuickAdd(entry);
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+            setTimeout(() => {
+              setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+            }, 1500);
           }}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['vitamin-d'] === 'loading' || buttonStates['vitamin-d'] === 'success'}
+          className={getButtonClass('vitamin-d', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-sun text-2xl"></i>
-          <span className="text-xs font-semibold">Vitamín D</span>
+          {getButtonContent('vitamin-d', 'fas fa-sun', 'Vitamín D')}
         </button>
 
         {/* SAB Simplex */}
         <button
-          onClick={() => {
+          onClick={async () => {
+            const buttonId = 'sab-simplex';
             hapticLight();
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
             const now = new Date();
             const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
               dateTime: now.toISOString(),
@@ -180,12 +255,16 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
               sabSimplex: true,
               notes: 'Rýchle pridanie: SAB Simplex',
             };
-            onQuickAdd(entry);
+            await onQuickAdd(entry);
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+            setTimeout(() => {
+              setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+            }, 1500);
           }}
-          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30"
+          disabled={buttonStates['sab-simplex'] === 'loading' || buttonStates['sab-simplex'] === 'success'}
+          className={getButtonClass('sab-simplex', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          <i className="fas fa-pills text-2xl"></i>
-          <span className="text-xs font-semibold">SAB Simplex</span>
+          {getButtonContent('sab-simplex', 'fas fa-pills', 'SAB Simplex')}
         </button>
       </div>
 

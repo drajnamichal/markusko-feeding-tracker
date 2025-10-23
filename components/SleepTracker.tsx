@@ -3,14 +3,17 @@ import type { SleepSession } from '../types';
 
 interface SleepTrackerProps {
   onClose: () => void;
-  onSave: (startTime: Date, endTime: Date, durationMinutes: number) => void;
+  onSave: (startTime: Date, endTime: Date, durationMinutes: number) => Promise<void>;
   recentSleeps: SleepSession[];
 }
+
+type ButtonState = 'idle' | 'loading' | 'success';
 
 const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSleeps }) => {
   const [isTracking, setIsTracking] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [seconds, setSeconds] = useState(0);
+  const [saveButtonState, setSaveButtonState] = useState<ButtonState>('idle');
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -41,16 +44,27 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
     setSeconds(0);
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     if (startTime) {
-      const endTime = new Date();
-      const durationMinutes = Math.floor((endTime.getTime() - startTime.getTime()) / 60000);
+      setSaveButtonState('loading');
       
-      onSave(startTime, endTime, durationMinutes);
-      
-      setIsTracking(false);
-      setStartTime(null);
-      setSeconds(0);
+      try {
+        const endTime = new Date();
+        const durationMinutes = Math.floor((endTime.getTime() - startTime.getTime()) / 60000);
+        
+        await onSave(startTime, endTime, durationMinutes);
+        
+        setSaveButtonState('success');
+        setTimeout(() => {
+          setSaveButtonState('idle');
+        }, 1500);
+        
+        setIsTracking(false);
+        setStartTime(null);
+        setSeconds(0);
+      } catch (error) {
+        setSaveButtonState('idle');
+      }
     }
   };
 
@@ -105,10 +119,30 @@ const SleepTracker: React.FC<SleepTrackerProps> = ({ onClose, onSave, recentSlee
             <>
               <button
                 onClick={handleStop}
-                className="flex-1 bg-gradient-to-r from-red-500 to-rose-600 text-white py-4 rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all shadow-lg"
+                disabled={saveButtonState === 'loading' || saveButtonState === 'success'}
+                className={`
+                  flex-1 text-white py-4 rounded-lg font-bold transition-all shadow-lg
+                  ${saveButtonState === 'loading' ? 'bg-slate-400 cursor-wait' : saveButtonState === 'success' ? 'bg-green-500' : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700'}
+                `}
               >
-                <i className="fas fa-stop mr-2"></i>
-                Koniec spánku
+                {saveButtonState === 'loading' && (
+                  <>
+                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                    Ukladám...
+                  </>
+                )}
+                {saveButtonState === 'success' && (
+                  <>
+                    <i className="fas fa-check mr-2"></i>
+                    Uložené!
+                  </>
+                )}
+                {saveButtonState === 'idle' && (
+                  <>
+                    <i className="fas fa-stop mr-2"></i>
+                    Koniec spánku
+                  </>
+                )}
               </button>
               <button
                 onClick={handleReset}

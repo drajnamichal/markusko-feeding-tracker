@@ -41,9 +41,11 @@ function App() {
   const [hoursSinceLastSabSimplex, setHoursSinceLastSabSimplex] = useState<number | null>(null);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileSaveState, setProfileSaveState] = useState<'idle' | 'loading' | 'success'>('idle');
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [measurementSaveState, setMeasurementSaveState] = useState<'idle' | 'loading' | 'success'>('idle');
   const [showTummyTimeStopwatch, setShowTummyTimeStopwatch] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastBottleFeedingData, setLastBottleFeedingData] = useState<{
@@ -1001,25 +1003,39 @@ function App() {
               </button>
             </div>
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const name = formData.get('name') as string;
-                const birthDate = formData.get('birthDate') as string;
-                const birthTime = formData.get('birthTime') as string;
-                const birthWeightGrams = parseInt(formData.get('birthWeightGrams') as string);
-                const birthHeightCm = parseFloat(formData.get('birthHeightCm') as string);
+                setProfileSaveState('loading');
                 
-                if (name.trim() && birthDate && birthTime && birthWeightGrams && birthHeightCm) {
-                  const updatedProfile: BabyProfile = {
-                    ...babyProfile,
-                    name: name.trim(),
-                    birthDate: new Date(birthDate),
-                    birthTime: birthTime,
-                    birthWeightGrams: birthWeightGrams,
-                    birthHeightCm: birthHeightCm,
-                  };
-                  updateBabyProfile(updatedProfile);
+                try {
+                  const formData = new FormData(e.currentTarget);
+                  const name = formData.get('name') as string;
+                  const birthDate = formData.get('birthDate') as string;
+                  const birthTime = formData.get('birthTime') as string;
+                  const birthWeightGrams = parseInt(formData.get('birthWeightGrams') as string);
+                  const birthHeightCm = parseFloat(formData.get('birthHeightCm') as string);
+                  
+                  if (name.trim() && birthDate && birthTime && birthWeightGrams && birthHeightCm) {
+                    const updatedProfile: BabyProfile = {
+                      ...babyProfile,
+                      name: name.trim(),
+                      birthDate: new Date(birthDate),
+                      birthTime: birthTime,
+                      birthWeightGrams: birthWeightGrams,
+                      birthHeightCm: birthHeightCm,
+                    };
+                    await updateBabyProfile(updatedProfile);
+                    
+                    setProfileSaveState('success');
+                    setTimeout(() => {
+                      setProfileSaveState('idle');
+                    }, 1500);
+                  } else {
+                    toast.warning('Vyplňte všetky povinné polia');
+                    setProfileSaveState('idle');
+                  }
+                } catch (error) {
+                  setProfileSaveState('idle');
                 }
               }}
             >
@@ -1104,14 +1120,33 @@ function App() {
               <div className="flex gap-2 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-teal-500 text-white py-3 rounded-lg font-semibold hover:bg-teal-600 transition-colors"
+                  disabled={profileSaveState === 'loading' || profileSaveState === 'success'}
+                  className={`
+                    flex-1 text-white py-3 rounded-lg font-semibold transition-colors
+                    ${profileSaveState === 'loading' ? 'bg-slate-400 cursor-wait' : profileSaveState === 'success' ? 'bg-green-500' : 'bg-teal-500 hover:bg-teal-600'}
+                  `}
                 >
-                  <i className="fas fa-save mr-2"></i>Uložiť
+                  {profileSaveState === 'loading' && (
+                    <>
+                      <i className="fas fa-spinner fa-spin mr-2"></i>Ukladám...
+                    </>
+                  )}
+                  {profileSaveState === 'success' && (
+                    <>
+                      <i className="fas fa-check mr-2"></i>Uložené!
+                    </>
+                  )}
+                  {profileSaveState === 'idle' && (
+                    <>
+                      <i className="fas fa-save mr-2"></i>Uložiť
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowProfileModal(false)}
-                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+                  disabled={profileSaveState === 'loading' || profileSaveState === 'success'}
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <i className="fas fa-times mr-2"></i>Zrušiť
                 </button>
@@ -1141,32 +1176,44 @@ function App() {
               </button>
             </div>
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const weightGramsStr = formData.get('weightGrams') as string;
-                const heightCmStr = formData.get('heightCm') as string;
-                const headCircumferenceCmStr = formData.get('headCircumferenceCm') as string;
-                const weightGrams = weightGramsStr ? parseInt(weightGramsStr) : 0;
-                const heightCm = heightCmStr ? parseFloat(heightCmStr) : null;
-                const headCircumferenceCm = headCircumferenceCmStr ? parseFloat(headCircumferenceCmStr) : null;
-                const notes = (formData.get('notes') as string) || '';
+                setMeasurementSaveState('loading');
                 
-                if (weightGrams > 0 || (heightCm && heightCm > 0) || (headCircumferenceCm && headCircumferenceCm > 0)) {
-                  if (editingMeasurement) {
-                    updateMeasurement({
-                      ...editingMeasurement,
-                      weightGrams: weightGrams,
-                      heightCm: heightCm || 0,
-                      headCircumferenceCm: headCircumferenceCm || 0,
-                      notes: notes,
-                      updatedAt: new Date(),
-                    });
+                try {
+                  const formData = new FormData(e.currentTarget);
+                  const weightGramsStr = formData.get('weightGrams') as string;
+                  const heightCmStr = formData.get('heightCm') as string;
+                  const headCircumferenceCmStr = formData.get('headCircumferenceCm') as string;
+                  const weightGrams = weightGramsStr ? parseInt(weightGramsStr) : 0;
+                  const heightCm = heightCmStr ? parseFloat(heightCmStr) : null;
+                  const headCircumferenceCm = headCircumferenceCmStr ? parseFloat(headCircumferenceCmStr) : null;
+                  const notes = (formData.get('notes') as string) || '';
+                  
+                  if (weightGrams > 0 || (heightCm && heightCm > 0) || (headCircumferenceCm && headCircumferenceCm > 0)) {
+                    if (editingMeasurement) {
+                      await updateMeasurement({
+                        ...editingMeasurement,
+                        weightGrams: weightGrams,
+                        heightCm: heightCm || 0,
+                        headCircumferenceCm: headCircumferenceCm || 0,
+                        notes: notes,
+                        updatedAt: new Date(),
+                      });
+                    } else {
+                      await addMeasurement(weightGrams, heightCm, headCircumferenceCm, notes);
+                    }
+                    
+                    setMeasurementSaveState('success');
+                    setTimeout(() => {
+                      setMeasurementSaveState('idle');
+                    }, 1500);
                   } else {
-                    addMeasurement(weightGrams, heightCm, headCircumferenceCm, notes);
+                    toast.warning('Zadajte aspoň jednu mieru');
+                    setMeasurementSaveState('idle');
                   }
-                } else {
-                  toast.warning('Zadajte aspoň jednu mieru');
+                } catch (error) {
+                  setMeasurementSaveState('idle');
                 }
               }}
             >
@@ -1240,9 +1287,30 @@ function App() {
               <div className="flex gap-2 mt-6">
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-rose-600 transition-all"
+                  disabled={measurementSaveState === 'loading' || measurementSaveState === 'success'}
+                  className={`
+                    flex-1 text-white py-3 rounded-lg font-semibold transition-all
+                    ${measurementSaveState === 'loading' ? 'bg-slate-400 cursor-wait' : measurementSaveState === 'success' ? 'bg-green-500' : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'}
+                  `}
                 >
-                  <i className="fas fa-save mr-2"></i>{editingMeasurement ? 'Uložiť zmeny' : 'Uložiť meranie'}
+                  {measurementSaveState === 'loading' && (
+                    <>
+                      <i className="fas fa-spinner fa-spin mr-2"></i>
+                      {editingMeasurement ? 'Ukladám...' : 'Ukladám...'}
+                    </>
+                  )}
+                  {measurementSaveState === 'success' && (
+                    <>
+                      <i className="fas fa-check mr-2"></i>
+                      {editingMeasurement ? 'Uložené!' : 'Uložené!'}
+                    </>
+                  )}
+                  {measurementSaveState === 'idle' && (
+                    <>
+                      <i className="fas fa-save mr-2"></i>
+                      {editingMeasurement ? 'Uložiť zmeny' : 'Uložiť meranie'}
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
