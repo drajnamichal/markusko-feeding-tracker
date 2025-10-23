@@ -13,6 +13,7 @@ import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
 import FormulaGuide from './components/FormulaGuide';
 import AIDoctor from './components/AIDoctor';
+import QuickAddButtons from './components/QuickAddButtons';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
@@ -421,6 +422,13 @@ function App() {
   };
   
   const deleteEntry = async (id: string) => {
+    // Find the entry before deleting
+    const entryToDelete = entries.find(entry => entry.id === id);
+    if (!entryToDelete) {
+      toast.error('Záznam nenájdený');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('log_entries')
@@ -429,8 +437,28 @@ function App() {
 
       if (error) throw error;
 
+      // Remove from state
       setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
-      toast.success('Záznam vymazaný');
+      
+      // Show undo toast
+      toast.showUndoToast('Záznam vymazaný', async () => {
+        // Undo: restore the entry
+        try {
+          const dbEntry = logEntryToDB(entryToDelete);
+          const { error: restoreError } = await supabase
+            .from('log_entries')
+            .insert([dbEntry]);
+
+          if (restoreError) throw restoreError;
+
+          // Add back to state
+          setEntries(prevEntries => [entryToDelete, ...prevEntries].sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()));
+          toast.success('Záznam obnovený');
+        } catch (undoError) {
+          console.error('Error restoring entry:', undoError);
+          toast.error('Chyba pri obnovení záznamu');
+        }
+      });
     } catch (error) {
       console.error('Error deleting entry:', error);
       toast.error('Chyba pri mazaní záznamu');
@@ -1305,6 +1333,13 @@ function App() {
           onSave={saveSleepSession}
           recentSleeps={sleepSessions}
         />
+      )}
+
+      {/* Quick Add Buttons - Only on Home Screen */}
+      {isHomeScreen && (
+        <div className="container mx-auto px-4 pt-4">
+          <QuickAddButtons onQuickAdd={addEntry} />
+        </div>
       )}
 
       {/* Reminders - Only on Home Screen */}

@@ -7,6 +7,8 @@ export interface Toast {
   message: string;
   type: ToastType;
   duration?: number;
+  onUndo?: () => void;
+  undoLabel?: string;
 }
 
 interface ToastContextType {
@@ -15,6 +17,7 @@ interface ToastContextType {
   error: (message: string, duration?: number) => void;
   info: (message: string, duration?: number) => void;
   warning: (message: string, duration?: number) => void;
+  showUndoToast: (message: string, onUndo: () => void, duration?: number) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -41,6 +44,26 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const showToast = useCallback((message: string, type: ToastType = 'info', duration: number = 3000) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     const newToast: Toast = { id, message, type, duration };
+
+    setToasts((prev) => [...prev, newToast]);
+
+    if (duration > 0) {
+      setTimeout(() => {
+        removeToast(id);
+      }, duration);
+    }
+  }, [removeToast]);
+
+  const showUndoToast = useCallback((message: string, onUndo: () => void, duration: number = 5000) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    const newToast: Toast = { 
+      id, 
+      message, 
+      type: 'info', 
+      duration,
+      onUndo,
+      undoLabel: 'Späť'
+    };
 
     setToasts((prev) => [...prev, newToast]);
 
@@ -96,7 +119,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   };
 
   return (
-    <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
+    <ToastContext.Provider value={{ showToast, success, error, info, warning, showUndoToast }}>
       {children}
       
       {/* Toast Container */}
@@ -119,6 +142,21 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
           >
             <i className={`fas ${getToastIcon(toast.type)} text-xl flex-shrink-0`}></i>
             <p className="font-medium text-sm flex-1">{toast.message}</p>
+            
+            {/* Undo Button */}
+            {toast.onUndo && (
+              <button
+                onClick={() => {
+                  toast.onUndo!();
+                  removeToast(toast.id);
+                }}
+                className="bg-white/20 hover:bg-white/30 text-white font-semibold px-3 py-1 rounded transition-colors flex-shrink-0"
+              >
+                <i className="fas fa-rotate-left mr-1"></i>
+                {toast.undoLabel || 'Späť'}
+              </button>
+            )}
+            
             <button
               onClick={() => removeToast(toast.id)}
               className="text-white/80 hover:text-white transition-colors flex-shrink-0"
