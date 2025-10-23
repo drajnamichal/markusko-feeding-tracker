@@ -182,7 +182,6 @@ function App() {
   }, []);
 
   // Check for feeding reminder every minute
-  // Check for feeding reminder every minute
   useEffect(() => {
     if (!feedingNotificationsEnabled || !entries.length) return;
 
