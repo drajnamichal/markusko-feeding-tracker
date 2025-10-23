@@ -13,7 +13,6 @@ import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
 import FormulaGuide from './components/FormulaGuide';
 import AIDoctor from './components/AIDoctor';
-import QuickAddButtons from './components/QuickAddButtons';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
@@ -1421,13 +1420,6 @@ function App() {
           onSave={saveSleepSession}
           recentSleeps={sleepSessions}
         />
-      )}
-
-      {/* Quick Add Buttons - Only on Home Screen */}
-      {isHomeScreen && (
-        <div className="container mx-auto px-4 pt-4">
-          <QuickAddButtons onQuickAdd={addEntry} />
-        </div>
       )}
 
       {/* Reminders - Only on Home Screen */}
