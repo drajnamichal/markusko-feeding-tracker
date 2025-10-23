@@ -60,6 +60,8 @@ function App() {
   });
   const [showMenu, setShowMenu] = useState(false);
   const [todayMilkIntake, setTodayMilkIntake] = useState({ current: 0, target150: 0, target180: 0, weight: 0 });
+  const [lastFeedingNotificationTime, setLastFeedingNotificationTime] = useState<number>(0);
+  const [lastSabSimplexNotificationTime, setLastSabSimplexNotificationTime] = useState<number>(0);
 
   // Request notification permission
   const requestNotificationPermission = async () => {
@@ -73,23 +75,62 @@ function App() {
     }
   };
 
-  // Send notification
-  const sendFeedingNotification = () => {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification('⏰ Čas na kŕmenie!', {
-        body: 'Už 2 hodiny od posledného kŕmenia',
+  // Send notification helper
+  const sendNotification = (title: string, body: string, tag: string) => {
+    if ('Notification' in window && Notification.permission === 'granted' && feedingNotificationsEnabled) {
+      const notification = new Notification(title, {
+        body,
         icon: '/icons/192.png',
         badge: '/icons/72.png',
-        tag: 'feeding-reminder',
+        tag,
         renotify: true,
         requireInteraction: true,
+        vibrate: [200, 100, 200],
+        silent: false,
       });
 
       notification.onclick = () => {
         window.focus();
         notification.close();
       };
+
+      return notification;
     }
+    return null;
+  };
+
+  // Send feeding notification
+  const sendFeedingNotification = () => {
+    const now = Date.now();
+    // Prevent spam - only send if 30+ minutes since last notification
+    if (now - lastFeedingNotificationTime < 30 * 60 * 1000) {
+      return;
+    }
+    
+    sendNotification(
+      '🍼 Čas na kŕmenie!',
+      'Už 2 hodiny od posledného kŕmenia fľašou',
+      'feeding-reminder'
+    );
+    
+    setLastFeedingNotificationTime(now);
+  };
+
+  // Send SAB Simplex notification
+  const sendSabSimplexNotification = () => {
+    const now = Date.now();
+    // Prevent spam - only send if 30+ minutes since last notification
+    if (now - lastSabSimplexNotificationTime < 30 * 60 * 1000) {
+      return;
+    }
+    
+    sendNotification(
+      '💊 SAB Simplex reminder',
+      'Uplynulo 4 hodiny od poslednej dávky. Môžete podať ďalších 10 kvapiek.',
+      'sab-simplex-reminder'
+    );
+    
+    setLastSabSimplexNotificationTime(now);
   };
 
   // Calculate baby's age
@@ -141,21 +182,22 @@ function App() {
   }, []);
 
   // Check for feeding reminder every minute
+  // Check for feeding reminder every minute
   useEffect(() => {
     if (!feedingNotificationsEnabled || !entries.length) return;
 
     const checkFeedingTime = () => {
       const now = new Date();
-      const feedings = entries
-        .filter(e => e.breastfed || e.breastMilkMl > 0 || e.formulaMl > 0)
+      const bottleFeedings = entries
+        .filter(e => e.breastMilkMl > 0 || e.formulaMl > 0)
         .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
 
-      if (feedings.length > 0) {
-        const lastFeeding = feedings[0];
+      if (bottleFeedings.length > 0) {
+        const lastFeeding = bottleFeedings[0];
         const hoursSinceLastFeeding = (now.getTime() - lastFeeding.dateTime.getTime()) / (1000 * 60 * 60);
 
-        // Send notification if 2 hours have passed
-        if (hoursSinceLastFeeding >= 2 && hoursSinceLastFeeding < 2.02) { // Small window to avoid multiple notifications
+        // Notify if 2+ hours since last feeding (spam prevention in sendFeedingNotification)
+        if (hoursSinceLastFeeding >= 2) {
           sendFeedingNotification();
         }
       }
@@ -166,7 +208,35 @@ function App() {
     const interval = setInterval(checkFeedingTime, 60000); // Check every minute
 
     return () => clearInterval(interval);
-  }, [entries, feedingNotificationsEnabled]);
+  }, [entries, feedingNotificationsEnabled, lastFeedingNotificationTime]);
+
+  // Check for SAB Simplex reminder every minute
+  useEffect(() => {
+    if (!feedingNotificationsEnabled || !entries.length) return;
+
+    const checkSabSimplexTime = () => {
+      const now = new Date();
+      const sabSimplexEntries = entries
+        .filter(e => e.sabSimplex)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (sabSimplexEntries.length > 0) {
+        const lastSabSimplex = sabSimplexEntries[0];
+        const hoursSinceLastDose = (now.getTime() - lastSabSimplex.dateTime.getTime()) / (1000 * 60 * 60);
+
+        // Notify if 4+ hours since last SAB Simplex dose (spam prevention in sendSabSimplexNotification)
+        if (hoursSinceLastDose >= 4) {
+          sendSabSimplexNotification();
+        }
+      }
+    };
+
+    // Check immediately and then every minute
+    checkSabSimplexTime();
+    const interval = setInterval(checkSabSimplexTime, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [entries, feedingNotificationsEnabled, lastSabSimplexNotificationTime]);
 
   // Calculate today's milk intake
   useEffect(() => {
