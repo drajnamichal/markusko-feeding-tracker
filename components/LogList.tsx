@@ -68,6 +68,7 @@ const LogList: React.FC<LogListProps> = ({ entries, onDeleteEntry, onEditEntry }
                                             <ActivityIcon icon="fa-prescription-bottle" label="Umelé mlieko" value={`${entry.formulaMl}ml`} color="text-green-600" enabled={entry.formulaMl > 0} />
                                             <ActivityIcon icon="fa-triangle-exclamation" label="Vracanie" color="text-red-500" enabled={entry.vomit} />
                                             <ActivityIcon icon="fa-sun" label="Vitamín D" color="text-orange-500" enabled={entry.vitaminD} />
+                                            <ActivityIcon icon="fa-pills" label="SAB Simplex" color="text-purple-600" enabled={entry.sabSimplex} />
                                             <ActivityIcon icon="fa-baby" label="Tummy Time" color="text-indigo-500" enabled={entry.tummyTime} />
                                             <ActivityIcon icon="fa-flask" label="Sterilizácia" color="text-cyan-500" enabled={entry.sterilization} />
                                             <ActivityIcon icon="fa-bath" label="Kúpanie" color="text-blue-500" enabled={entry.bathing} />
