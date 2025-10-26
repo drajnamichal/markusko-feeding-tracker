@@ -1535,8 +1535,9 @@ function App() {
           </div>
         )}
 
-        {/* SAB Simplex - Initial reminder (no doses today) */}
-        {sabSimplexTodayCount === 0 && (
+        {/* SAB Simplex Widget */}
+        {hoursSinceLastSabSimplex === null ? (
+          /* Initial reminder - no doses ever */
           <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md flex items-center justify-between">
             <div className="flex items-center gap-3">
               <i className="fas fa-pills text-3xl text-purple-500"></i>
@@ -1545,7 +1546,7 @@ function App() {
                 <p className="text-sm text-purple-700">10 kvapiek do mlieka</p>
                 <p className="text-xs text-purple-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  Dávkovanie: 4x denne, každé 4 hodiny
+                  Dávkovanie: 4x denne, každé 4-6 hodín
                 </p>
               </div>
             </div>
@@ -1557,10 +1558,8 @@ function App() {
               <i className="fas fa-info-circle text-xl"></i>
             </button>
           </div>
-        )}
-
-        {/* SAB Simplex - Tracking widget (after first dose) */}
-        {sabSimplexTodayCount > 0 && (
+        ) : (
+          /* Tracking widget - shows time since LAST dose (even from yesterday) */
           <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
             <div className="flex items-center gap-3">
               <i className="fas fa-pills text-3xl text-purple-500"></i>
@@ -1568,26 +1567,24 @@ function App() {
                 <p className="font-bold text-purple-800 mb-1">💊 SAB Simplex</p>
                 <div className="text-sm text-purple-700 space-y-1">
                   <p>
-                    Dnes: <span className="font-bold text-lg">{sabSimplexTodayCount}/4</span> dávok
-                    {sabSimplexTodayCount < 4 && (
-                      <span className="ml-2">(ešte {4 - sabSimplexTodayCount}x)</span>
+                    Od poslednej dávky: <span className="font-bold text-xl">{hoursSinceLastSabSimplex.toFixed(1)}h</span>
+                    {hoursSinceLastSabSimplex >= 4 ? (
+                      <span className="ml-2 text-green-600 font-bold">✓ Môžete podať ďalšiu dávku</span>
+                    ) : (
+                      <span className="ml-2 text-amber-600">
+                        Ďalšia dávka za {(4 - hoursSinceLastSabSimplex).toFixed(1)}h
+                      </span>
                     )}
                   </p>
-                  {hoursSinceLastSabSimplex !== null && (
-                    <p>
-                      Od poslednej dávky: <span className="font-bold">{hoursSinceLastSabSimplex.toFixed(1)}h</span>
-                      {hoursSinceLastSabSimplex >= 4 ? (
-                        <span className="ml-2 text-green-600 font-bold">✓ Môžete podať ďalšiu dávku</span>
-                      ) : (
-                        <span className="ml-2 text-amber-600">
-                          Ďalšia dávka za {(4 - hoursSinceLastSabSimplex).toFixed(1)}h
-                        </span>
-                      )}
-                    </p>
-                  )}
+                  <p className="text-xs text-purple-600">
+                    Dnes: <span className="font-semibold">{sabSimplexTodayCount}/4</span> dávok
+                    {sabSimplexTodayCount < 4 && (
+                      <span className="ml-1">(ešte {4 - sabSimplexTodayCount}x)</span>
+                    )}
+                  </p>
                   <p className="text-xs text-purple-600 mt-2">
                     <i className="fas fa-info-circle mr-1"></i>
-                    Dávkovanie: 4x10 kvapiek do mlieka (každé 4 hodiny)
+                    Dávkovanie: 4x10 kvapiek (každé 4-6 hodín)
                   </p>
                 </div>
               </div>
