@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { LogEntry } from '../types';
 
 interface EntryFormProps {
@@ -11,12 +11,15 @@ interface EntryFormProps {
 
 type ButtonState = 'idle' | 'loading' | 'success';
 
-const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdateEntry, onCancelEdit }) => {
+// Helper function to get current time as ISO string for datetime-local input
+const getCurrentDateTimeString = () => {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  const nowString = now.toISOString().slice(0, 16);
+  return now.toISOString().slice(0, 16);
+};
 
-  const [dateTime, setDateTime] = useState(nowString);
+const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdateEntry, onCancelEdit }) => {
+  const [dateTime, setDateTime] = useState(getCurrentDateTimeString());
   const [poop, setPoop] = useState(false);
   const [pee, setPee] = useState(false);
   const [breastfed, setBreastfed] = useState(false);
@@ -31,8 +34,35 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
   const [notes, setNotes] = useState('');
   const [saveButtonState, setSaveButtonState] = useState<ButtonState>('idle');
 
+  // Update time when app comes back from background (Page Visibility API)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !editingEntry) {
+        // App is visible again and not editing - update time to current
+        setDateTime(getCurrentDateTimeString());
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [editingEntry]);
+
+  // Update time every minute (for long-running sessions)
+  useEffect(() => {
+    if (editingEntry) return; // Don't update time when editing
+
+    const interval = setInterval(() => {
+      setDateTime(getCurrentDateTimeString());
+    }, 60000); // Update every 60 seconds
+
+    return () => clearInterval(interval);
+  }, [editingEntry]);
+
   // Populate form when editing
-  React.useEffect(() => {
+  useEffect(() => {
     if (editingEntry) {
       const editDate = new Date(editingEntry.dateTime);
       editDate.setMinutes(editDate.getMinutes() - editDate.getTimezoneOffset());
@@ -120,9 +150,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
     setBreastMilkMl('');
     setFormulaMl('');
     setNotes('');
-    const newNow = new Date();
-    newNow.setMinutes(newNow.getMinutes() - newNow.getTimezoneOffset());
-    setDateTime(newNow.toISOString().slice(0, 16));
+    setDateTime(getCurrentDateTimeString());
   };
 
   const handleCancel = () => {
