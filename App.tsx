@@ -16,6 +16,14 @@ import AIDoctor from './components/AIDoctor';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
+import { 
+  getWHOTummyTimeRecommendation, 
+  calculateAgeInWeeks, 
+  formatTummyTimeSeconds,
+  calculateTummyTimeProgress,
+  getTummyTimeProgressColor,
+  getTummyTimeMessage
+} from './utils/tummyTimeHelpers';
 import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
 
 function App() {
@@ -31,6 +39,7 @@ function App() {
   const [showAIDoctor, setShowAIDoctor] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tummyTimeCount, setTummyTimeCount] = useState(0);
+  const [tummyTimeTodaySeconds, setTummyTimeTodaySeconds] = useState(0);
   const [showTummyTimeReminder, setShowTummyTimeReminder] = useState(false);
   const [showSterilizationReminder, setShowSterilizationReminder] = useState(false);
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
@@ -273,22 +282,48 @@ function App() {
     }
   }, [entries, measurements, loading]);
 
-  // Check for tummy time reminder
+  // Check for tummy time reminder and calculate total time
   useEffect(() => {
     if (!loading) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const tummyTimeToday = entries.filter(entry => {
+      const tummyTimeEntries = entries.filter(entry => {
         const entryDate = new Date(entry.dateTime);
         entryDate.setHours(0, 0, 0, 0);
         return entryDate.getTime() === today.getTime() && entry.tummyTime;
-      }).length;
+      });
 
-      setTummyTimeCount(tummyTimeToday);
-      setShowTummyTimeReminder(tummyTimeToday < 3);
+      // Count sessions
+      setTummyTimeCount(tummyTimeEntries.length);
+
+      // Calculate total time in seconds from notes
+      let totalSeconds = 0;
+      tummyTimeEntries.forEach(entry => {
+        if (entry.notes) {
+          // Parse "Tummy Time: X min Y sek" format
+          const match = entry.notes.match(/Tummy Time: (\d+) min (\d+) sek/);
+          if (match) {
+            const mins = parseInt(match[1], 10);
+            const secs = parseInt(match[2], 10);
+            totalSeconds += (mins * 60) + secs;
+          }
+        }
+      });
+
+      setTummyTimeTodaySeconds(totalSeconds);
+
+      // Show reminder if not enough time (based on WHO recommendations)
+      if (babyProfile) {
+        const ageWeeks = calculateAgeInWeeks(new Date(babyProfile.birthDate));
+        const recommendation = getWHOTummyTimeRecommendation(ageWeeks);
+        const targetSeconds = recommendation.recommendedDailyMinutes * 60;
+        setShowTummyTimeReminder(totalSeconds < targetSeconds * 0.5); // Show if less than 50% of target
+      } else {
+        setShowTummyTimeReminder(tummyTimeEntries.length < 3);
+      }
     }
-  }, [entries, loading]);
+  }, [entries, loading, babyProfile]);
 
   // Check for sterilization reminder (every 2 days)
   useEffect(() => {
@@ -1495,26 +1530,88 @@ function App() {
       {isHomeScreen && (
         <div className="container mx-auto px-4 pt-4 space-y-3">
 
-        {showTummyTimeReminder && (
-          <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-lg shadow-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-baby text-3xl text-indigo-500"></i>
-              <div>
-                <p className="font-bold text-indigo-800">Pripomienka: Tummy Time</p>
-                <p className="text-sm text-indigo-700">
-                  Dnes: {tummyTimeCount}/3 | Ešte potrebujete: <span className="font-bold">{3 - tummyTimeCount}x</span>
+        {/* Tummy Time Widget with WHO Recommendations */}
+        {babyProfile && (() => {
+          const ageWeeks = calculateAgeInWeeks(new Date(babyProfile.birthDate));
+          const recommendation = getWHOTummyTimeRecommendation(ageWeeks);
+          const currentMinutes = tummyTimeTodaySeconds / 60;
+          const progress = calculateTummyTimeProgress(currentMinutes, recommendation.recommendedDailyMinutes);
+          const progressColor = getTummyTimeProgressColor(progress);
+          const message = getTummyTimeMessage(progress);
+
+          return (
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border-l-4 border-indigo-500 rounded-xl shadow-lg p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <i className="fas fa-baby text-4xl text-indigo-500"></i>
+                  <div>
+                    <h3 className="font-bold text-indigo-900 text-lg">Tummy Time Tracker</h3>
+                    <p className="text-xs text-indigo-600">Vek: {recommendation.ageLabel}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowTummyTimeStopwatch(true)}
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors shadow-md flex items-center gap-2"
+                >
+                  <i className="fas fa-stopwatch"></i>
+                  Štart
+                </button>
+              </div>
+
+              {/* Progress Section */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-indigo-800">
+                    <i className="fas fa-clock mr-1"></i>
+                    Dnes: <span className="font-bold text-lg">{formatTummyTimeSeconds(tummyTimeTodaySeconds)}</span>
+                  </span>
+                  <span className="text-sm font-medium text-indigo-600">
+                    Cieľ: {recommendation.recommendedDailyMinutes} min
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                  <div
+                    className={`${progressColor} h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2`}
+                    style={{ width: `${Math.min(progress, 100)}%` }}
+                  >
+                    {progress >= 20 && (
+                      <span className="text-white text-xs font-bold">{Math.round(progress)}%</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Message & Sessions */}
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-indigo-700">{message}</p>
+                <span className="text-xs text-indigo-600">
+                  <i className="fas fa-list mr-1"></i>
+                  {tummyTimeCount} {tummyTimeCount === 1 ? 'session' : 'sessions'}
+                </span>
+              </div>
+
+              {/* WHO Recommendation Info */}
+              <div className="mt-3 pt-3 border-t border-indigo-200">
+                <p className="text-xs text-indigo-600">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  <strong>WHO:</strong> {recommendation.sessionMinutes} naraz, {recommendation.sessionsPerDay}
                 </p>
               </div>
+
+              {/* Show reminder only if below 50% */}
+              {showTummyTimeReminder && (
+                <div className="mt-3 p-2 bg-amber-100 border border-amber-300 rounded-lg">
+                  <p className="text-xs text-amber-800 font-medium">
+                    <i className="fas fa-exclamation-triangle mr-1"></i>
+                    Nezabudnite na Tummy Time! Ešte potrebujete aspoň {Math.ceil((recommendation.recommendedDailyMinutes * 0.5 - currentMinutes))} minút.
+                  </p>
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => setShowTummyTimeReminder(false)}
-              className="text-indigo-500 hover:text-indigo-700 transition-colors"
-              aria-label="Zavrieť pripomienku"
-            >
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        )}
+          );
+        })()}
 
         {showSterilizationReminder && (
           <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded-lg shadow-md flex items-center justify-between">
