@@ -17,8 +17,8 @@ export interface TummyTimeRecommendation {
  * Get WHO recommended tummy time based on baby's age in weeks
  */
 export const getWHOTummyTimeRecommendation = (ageInWeeks: number): TummyTimeRecommendation => {
-  if (ageInWeeks <= 2) {
-    // 0-2 weeks
+  if (ageInWeeks < 2) {
+    // 0-2 weeks (0-13 days)
     return {
       ageWeeks: ageInWeeks,
       ageLabel: '0-2 týždne',
@@ -27,18 +27,18 @@ export const getWHOTummyTimeRecommendation = (ageInWeeks: number): TummyTimeReco
       sessionsPerDay: 'niekoľkokrát denne',
       description: 'Krátke intervaly niekoľkokrát za deň',
     };
-  } else if (ageInWeeks <= 4) {
-    // 3-4 weeks
+  } else if (ageInWeeks < 4) {
+    // 2-4 weeks (14-27 days)
     return {
       ageWeeks: ageInWeeks,
-      ageLabel: '3-4 týždne',
+      ageLabel: '2-4 týždne',
       recommendedDailyMinutes: 12.5, // 10-15 minutes average
       sessionMinutes: '2-3 minúty',
       sessionsPerDay: '3-4 krát denne',
       description: '3-4 krát denne po kŕmení',
     };
-  } else if (ageInWeeks <= 8) {
-    // 1-2 months (5-8 weeks)
+  } else if (ageInWeeks < 8) {
+    // 1-2 months (28-55 days / 4-7 weeks)
     return {
       ageWeeks: ageInWeeks,
       ageLabel: '1-2 mesiace',
@@ -47,8 +47,8 @@ export const getWHOTummyTimeRecommendation = (ageInWeeks: number): TummyTimeReco
       sessionsPerDay: 'viac krát denne',
       description: 'Rozdelené na viac krát',
     };
-  } else if (ageInWeeks <= 12) {
-    // 2-3 months (9-12 weeks)
+  } else if (ageInWeeks < 12) {
+    // 2-3 months (56-83 days / 8-11 weeks)
     return {
       ageWeeks: ageInWeeks,
       ageLabel: '2-3 mesiace',
@@ -58,7 +58,7 @@ export const getWHOTummyTimeRecommendation = (ageInWeeks: number): TummyTimeReco
       description: 'Napr. 4-6 krát denne',
     };
   } else {
-    // 3+ months
+    // 3+ months (84+ days / 12+ weeks)
     return {
       ageWeeks: ageInWeeks,
       ageLabel: '3+ mesiace',
