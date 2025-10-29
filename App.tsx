@@ -1077,6 +1077,7 @@ function App() {
                       currentProfileId={selectedProfileId}
                       onSelectProfile={setSelectedProfileId}
                       onCreateNew={() => setShowWelcomeSetup(true)}
+                      showNameInButton={false}
                     />
                   )}
                   <button
