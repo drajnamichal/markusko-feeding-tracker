@@ -1804,10 +1804,55 @@ function App() {
         </div>
       )}
 
-      {/* Reminders - Only on Home Screen */}
+      {/* Reminders & Widgets - Only on Home Screen */}
       {isHomeScreen && (
         <div className="container mx-auto px-4 pt-4 space-y-3">
 
+        {/* ======= REMINDERS SECTION (always on top) ======= */}
+        {showSterilizationReminder && (
+          <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-flask text-3xl text-cyan-500"></i>
+              <div>
+                <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fliaš</p>
+                <p className="text-sm text-cyan-700">Čas na novú sterilizáciu!</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowSterilizationReminder(false)}
+              className="text-cyan-500 hover:text-cyan-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {showBathingReminder && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-bath text-3xl text-blue-500"></i>
+              <div>
+                <p className="font-bold text-blue-800">Pripomienka: Kúpanie</p>
+                <p className="text-sm text-blue-700">
+                  {daysSinceLastBathing >= 999 
+                    ? 'Ešte ste nezaznamenali kúpanie!' 
+                    : `Posledné kúpanie pred ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dňom' : 'dňami'}. Čas na kúpanie!`
+                  }
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowBathingReminder(false)}
+              className="text-blue-500 hover:text-blue-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {/* ======= TRACKING WIDGETS SECTION ======= */}
         {/* Tummy Time Widget with WHO Recommendations */}
         {babyProfile && (() => {
           const ageWeeks = calculateAgeInWeeks(new Date(babyProfile.birthDate));
@@ -1891,25 +1936,6 @@ function App() {
           );
         })()}
 
-        {showSterilizationReminder && (
-          <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded-lg shadow-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-flask text-3xl text-cyan-500"></i>
-              <div>
-                <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fliaš</p>
-                <p className="text-sm text-cyan-700">Čas na novú sterilizáciu!</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowSterilizationReminder(false)}
-              className="text-cyan-500 hover:text-cyan-700 transition-colors"
-              aria-label="Zavrieť pripomienku"
-            >
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        )}
-
         {/* SAB Simplex Widget */}
         {hoursSinceLastSabSimplex === null ? (
           /* Initial reminder - no doses ever */
@@ -1964,30 +1990,6 @@ function App() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {showBathingReminder && (
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-bath text-3xl text-blue-500"></i>
-              <div>
-                <p className="font-bold text-blue-800">Pripomienka: Kúpanie</p>
-                <p className="text-sm text-blue-700">
-                  {daysSinceLastBathing >= 999 
-                    ? 'Ešte ste nezaznamenali kúpanie!' 
-                    : `Posledné kúpanie pred ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dňom' : 'dňami'}. Čas na kúpanie!`
-                  }
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowBathingReminder(false)}
-              className="text-blue-500 hover:text-blue-700 transition-colors"
-              aria-label="Zavrieť pripomienku"
-            >
-              <i className="fas fa-times text-xl"></i>
-            </button>
           </div>
         )}
 
