@@ -928,16 +928,25 @@ function App() {
     <div className="min-h-screen bg-slate-50 font-sans">
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-4xl">👶</div>
               <div>
-                <h1 
-                  className="text-2xl font-bold text-slate-700 flex items-center gap-2 cursor-pointer hover:text-teal-600 transition-colors"
-                  onClick={goToHome}
-                  title="Späť na hlavnú stránku"
-                >
-                  {babyProfile?.name || 'Loading...'}
+                <div className="flex items-center gap-2">
+                  <h1 
+                    className="text-2xl font-bold text-slate-700 cursor-pointer hover:text-teal-600 transition-colors"
+                    onClick={goToHome}
+                    title="Späť na hlavnú stránku"
+                  >
+                    {babyProfile?.name || 'Loading...'}
+                  </h1>
+                  {selectedProfileId && (
+                    <ProfileSelector
+                      currentProfileId={selectedProfileId}
+                      onSelectProfile={setSelectedProfileId}
+                      onCreateNew={() => setShowWelcomeSetup(true)}
+                    />
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -948,22 +957,14 @@ function App() {
                   >
                     <i className="fas fa-pen-to-square"></i>
                   </button>
-                </h1>
+                </div>
                 <p className="text-sm text-slate-500">
                   <i className="fas fa-birthday-cake mr-1"></i>
                   Vek: {calculateAge()}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {selectedProfileId && (
-                <ProfileSelector
-                  currentProfileId={selectedProfileId}
-                  onSelectProfile={setSelectedProfileId}
-                  onCreateNew={() => setShowWelcomeSetup(true)}
-                />
-              )}
-              <div className="relative">
+            <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
                 className="px-4 py-2 rounded-lg font-medium transition-all bg-teal-500 text-white hover:bg-teal-600"
@@ -1182,7 +1183,6 @@ function App() {
                   </div>
                 </>
               )}
-              </div>
             </div>
           </div>
         </div>
