@@ -86,7 +86,7 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({
             className="fixed inset-0 z-40" 
             onClick={() => setShowSelector(false)}
           ></div>
-          <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 z-50 min-w-[280px] max-w-sm">
+          <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 z-50 w-screen max-w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[320px] sm:max-w-sm">
             <div className="p-2">
               <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide border-b border-slate-200">
                 Profily bábätiek
