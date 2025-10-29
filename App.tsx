@@ -2076,48 +2076,51 @@ function App() {
       </div>
       )}
 
-      <main className={`container mx-auto p-4 md:p-8 ${isHomeScreen ? 'grid grid-cols-1 lg:grid-cols-3 gap-8' : 'max-w-6xl'}`}>
-        {isHomeScreen && (
-          <div className="lg:col-span-1">
-            <EntryForm 
-              onAddEntry={addEntry} 
-              editingEntry={editingEntry}
-              onUpdateEntry={updateEntry}
-              onCancelEdit={cancelEdit}
-            />
-          </div>
-        )}
-        <div className={isHomeScreen ? 'lg:col-span-2' : ''}>
-          {showAIDoctor ? (
-            babyProfile ? (
-              <AIDoctor 
-                babyProfile={babyProfile}
-                entries={entries}
-                measurements={measurements}
-                sleepSessions={sleepSessions}
+      {/* Main content - hide when showing special pages like Doctor Visits or Sleep Tracker */}
+      {!showDoctorVisits && !showSleepTracker && (
+        <main className={`container mx-auto p-4 md:p-8 ${isHomeScreen ? 'grid grid-cols-1 lg:grid-cols-3 gap-8' : 'max-w-6xl'}`}>
+          {isHomeScreen && (
+            <div className="lg:col-span-1">
+              <EntryForm 
+                onAddEntry={addEntry} 
+                editingEntry={editingEntry}
+                onUpdateEntry={updateEntry}
+                onCancelEdit={cancelEdit}
               />
-            ) : <ComponentLoadingSkeleton type="ai" />
-          ) : showWHOPercentiles ? (
-            babyProfile ? <WHOPercentileCharts babyProfile={babyProfile} measurements={measurements} /> : <ComponentLoadingSkeleton type="percentiles" />
-          ) : showDevelopment ? (
-            babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="development" />
-          ) : showWHO ? (
-            babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="who" />
-          ) : showFormulaGuide ? (
-            <FormulaGuide currentWeight={measurements.length > 0 ? measurements[0].weightGrams : undefined} />
-          ) : showWhiteNoise ? (
-            <WhiteNoise />
-          ) : showStats ? (
-            <Statistics entries={entries} sleepSessions={sleepSessions} />
-          ) : (
-            <LogList 
-              entries={entries} 
-              onDeleteEntry={deleteEntry}
-              onEditEntry={startEditEntry}
-            />
+            </div>
           )}
-        </div>
-      </main>
+          <div className={isHomeScreen ? 'lg:col-span-2' : ''}>
+            {showAIDoctor ? (
+              babyProfile ? (
+                <AIDoctor 
+                  babyProfile={babyProfile}
+                  entries={entries}
+                  measurements={measurements}
+                  sleepSessions={sleepSessions}
+                />
+              ) : <ComponentLoadingSkeleton type="ai" />
+            ) : showWHOPercentiles ? (
+              babyProfile ? <WHOPercentileCharts babyProfile={babyProfile} measurements={measurements} /> : <ComponentLoadingSkeleton type="percentiles" />
+            ) : showDevelopment ? (
+              babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="development" />
+            ) : showWHO ? (
+              babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="who" />
+            ) : showFormulaGuide ? (
+              <FormulaGuide currentWeight={measurements.length > 0 ? measurements[0].weightGrams : undefined} />
+            ) : showWhiteNoise ? (
+              <WhiteNoise />
+            ) : showStats ? (
+              <Statistics entries={entries} sleepSessions={sleepSessions} />
+            ) : (
+              <LogList 
+                entries={entries} 
+                onDeleteEntry={deleteEntry}
+                onEditEntry={startEditEntry}
+              />
+            )}
+          </div>
+        </main>
+      )}
     </div>
   );
 }
