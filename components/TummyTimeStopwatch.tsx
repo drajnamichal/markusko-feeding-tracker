@@ -8,16 +8,64 @@ interface TummyTimeStopwatchProps {
 const TummyTimeStopwatch: React.FC<TummyTimeStopwatchProps> = ({ onClose, onSave }) => {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [pausedSeconds, setPausedSeconds] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Load saved state from localStorage on mount
   useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setSeconds(prev => prev + 1);
-      }, 1000);
+    const savedStartTime = localStorage.getItem('tummyTimeStopwatch_startTime');
+    const savedPausedSeconds = localStorage.getItem('tummyTimeStopwatch_pausedSeconds');
+    const savedIsRunning = localStorage.getItem('tummyTimeStopwatch_isRunning');
+    
+    if (savedStartTime && savedIsRunning === 'true') {
+      const loadedStartTime = parseInt(savedStartTime, 10);
+      const loadedPausedSeconds = parseInt(savedPausedSeconds || '0', 10);
+      setStartTime(loadedStartTime);
+      setPausedSeconds(loadedPausedSeconds);
+      setIsRunning(true);
+      
+      // Calculate elapsed time based on saved start time
+      const elapsed = loadedPausedSeconds + Math.floor((Date.now() - loadedStartTime) / 1000);
+      setSeconds(elapsed);
+    } else if (savedPausedSeconds) {
+      const loadedPausedSeconds = parseInt(savedPausedSeconds, 10);
+      setPausedSeconds(loadedPausedSeconds);
+      setSeconds(loadedPausedSeconds);
+    }
+  }, []);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (isRunning && startTime !== null) {
+      localStorage.setItem('tummyTimeStopwatch_startTime', startTime.toString());
+      localStorage.setItem('tummyTimeStopwatch_pausedSeconds', pausedSeconds.toString());
+      localStorage.setItem('tummyTimeStopwatch_isRunning', 'true');
+    } else {
+      localStorage.setItem('tummyTimeStopwatch_pausedSeconds', pausedSeconds.toString());
+      localStorage.removeItem('tummyTimeStopwatch_startTime');
+      localStorage.removeItem('tummyTimeStopwatch_isRunning');
+    }
+  }, [isRunning, startTime, pausedSeconds]);
+
+  // Update timer display every second
+  useEffect(() => {
+    if (isRunning && startTime !== null) {
+      // Calculate elapsed time based on timestamp difference
+      const updateSeconds = () => {
+        const elapsed = pausedSeconds + Math.floor((Date.now() - startTime) / 1000);
+        setSeconds(elapsed);
+      };
+
+      // Update immediately
+      updateSeconds();
+
+      // Then update every second for display
+      intervalRef.current = setInterval(updateSeconds, 1000);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     }
 
@@ -26,7 +74,7 @@ const TummyTimeStopwatch: React.FC<TummyTimeStopwatchProps> = ({ onClose, onSave
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning]);
+  }, [isRunning, startTime, pausedSeconds]);
 
   const formatTime = (totalSeconds: number): string => {
     const mins = Math.floor(totalSeconds / 60);
@@ -35,21 +83,48 @@ const TummyTimeStopwatch: React.FC<TummyTimeStopwatchProps> = ({ onClose, onSave
   };
 
   const handleStart = () => {
-    setIsRunning(true);
+    if (seconds > 0) {
+      // Resume from paused state
+      setStartTime(Date.now());
+      setIsRunning(true);
+    } else {
+      // Start fresh
+      setStartTime(Date.now());
+      setPausedSeconds(0);
+      setIsRunning(true);
+    }
   };
 
   const handlePause = () => {
+    if (startTime !== null) {
+      // Calculate total elapsed time and save it
+      const totalElapsed = pausedSeconds + Math.floor((Date.now() - startTime) / 1000);
+      setPausedSeconds(totalElapsed);
+      setSeconds(totalElapsed);
+    }
     setIsRunning(false);
+    setStartTime(null);
   };
 
   const handleReset = () => {
     setIsRunning(false);
+    setStartTime(null);
+    setPausedSeconds(0);
     setSeconds(0);
+    localStorage.removeItem('tummyTimeStopwatch_startTime');
+    localStorage.removeItem('tummyTimeStopwatch_pausedSeconds');
+    localStorage.removeItem('tummyTimeStopwatch_isRunning');
   };
 
   const handleSave = () => {
-    if (seconds > 0) {
-      onSave(seconds);
+    // Calculate final elapsed time
+    let finalSeconds = seconds;
+    if (isRunning && startTime !== null) {
+      finalSeconds = pausedSeconds + Math.floor((Date.now() - startTime) / 1000);
+    }
+
+    if (finalSeconds > 0) {
+      onSave(finalSeconds);
       handleReset();
       onClose();
     }
