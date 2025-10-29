@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { LogEntry, BabyProfile, Measurement, SleepSession } from './types';
+import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -170,5 +170,48 @@ export const dbToSleepSession = (dbSession: SleepSessionDB): SleepSession => ({
   notes: dbSession.notes,
   createdAt: new Date(dbSession.created_at),
   updatedAt: new Date(dbSession.updated_at),
+});
+
+// Database types for DoctorVisit
+export interface DoctorVisitDB {
+  id: string;
+  baby_profile_id: string;
+  visit_date: string;
+  visit_time: string;
+  doctor_type: string;
+  doctor_name: string;
+  location: string;
+  notes: string;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Convert DoctorVisit to database format
+export const doctorVisitToDB = (visit: DoctorVisit): Omit<DoctorVisitDB, 'created_at' | 'updated_at'> => ({
+  id: visit.id,
+  baby_profile_id: visit.babyProfileId,
+  visit_date: visit.visitDate.toISOString().split('T')[0],
+  visit_time: visit.visitTime,
+  doctor_type: visit.doctorType,
+  doctor_name: visit.doctorName || '',
+  location: visit.location || '',
+  notes: visit.notes || '',
+  completed: visit.completed,
+});
+
+// Convert database format to DoctorVisit
+export const dbToDoctorVisit = (dbVisit: DoctorVisitDB): DoctorVisit => ({
+  id: dbVisit.id,
+  babyProfileId: dbVisit.baby_profile_id,
+  visitDate: new Date(dbVisit.visit_date),
+  visitTime: dbVisit.visit_time,
+  doctorType: dbVisit.doctor_type,
+  doctorName: dbVisit.doctor_name,
+  location: dbVisit.location,
+  notes: dbVisit.notes,
+  completed: dbVisit.completed,
+  createdAt: new Date(dbVisit.created_at),
+  updatedAt: new Date(dbVisit.updated_at),
 });
 

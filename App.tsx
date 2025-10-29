@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import type { LogEntry, BabyProfile, Measurement, SleepSession } from './types';
+import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit } from './types';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
 import Statistics from './components/Statistics';
@@ -14,6 +14,7 @@ import FormulaGuide from './components/FormulaGuide';
 import AIDoctor from './components/AIDoctor';
 import WelcomeSetup from './components/WelcomeSetup';
 import ProfileSelector from './components/ProfileSelector';
+import DoctorVisits from './components/DoctorVisits';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
@@ -25,7 +26,7 @@ import {
   getTummyTimeProgressColor,
   getTummyTimeMessage
 } from './utils/tummyTimeHelpers';
-import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, type BabyProfileDB, type MeasurementDB, type SleepSessionDB } from './supabaseClient';
+import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, doctorVisitToDB, dbToDoctorVisit, type BabyProfileDB, type MeasurementDB, type SleepSessionDB, type DoctorVisitDB } from './supabaseClient';
 
 function App() {
   const toast = useToast();
@@ -68,6 +69,8 @@ function App() {
   } | null>(null);
   const [sleepSessions, setSleepSessions] = useState<SleepSession[]>([]);
   const [showSleepTracker, setShowSleepTracker] = useState(false);
+  const [doctorVisits, setDoctorVisits] = useState<DoctorVisit[]>([]);
+  const [showDoctorVisits, setShowDoctorVisits] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [feedingNotificationsEnabled, setFeedingNotificationsEnabled] = useState(() => {
     return localStorage.getItem('feedingNotificationsEnabled') === 'true';
@@ -199,6 +202,7 @@ function App() {
       if (selectedProfileId) {
         loadMeasurements(selectedProfileId);
         loadSleepSessions(selectedProfileId);
+        loadDoctorVisits(selectedProfileId);
       }
     }
   }, [babyProfile, selectedProfileId]);
@@ -846,7 +850,7 @@ function App() {
 
   const loadSleepSessions = async (profileId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('sleep_sessions')
         .select('*')
         .eq('baby_profile_id', profileId)
@@ -857,9 +861,135 @@ function App() {
       if (data && data.length > 0) {
         const sessions = data.map(dbToSleepSession);
         setSleepSessions(sessions);
+      } else {
+        setSleepSessions([]);
       }
     } catch (error) {
       console.error('Error loading sleep sessions:', error);
+    }
+  };
+
+  const loadDoctorVisits = async (profileId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('doctor_visits')
+        .select('*')
+        .eq('baby_profile_id', profileId)
+        .order('visit_date', { ascending: true });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const visits = data.map(dbToDoctorVisit);
+        setDoctorVisits(visits);
+      } else {
+        setDoctorVisits([]);
+      }
+    } catch (error) {
+      console.error('Error loading doctor visits:', error);
+    }
+  };
+
+  const addDoctorVisit = async (visitData: Omit<DoctorVisit, 'id' | 'babyProfileId' | 'createdAt' | 'updatedAt'>) => {
+    if (!selectedProfileId) {
+      toast.error('Vyberte profil bábätka');
+      return;
+    }
+
+    const newVisit: DoctorVisit = {
+      id: new Date().toISOString() + Math.random(),
+      babyProfileId: selectedProfileId,
+      ...visitData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    try {
+      const dbVisit = doctorVisitToDB(newVisit);
+      const { error } = await supabase
+        .from('doctor_visits')
+        .insert([dbVisit]);
+
+      if (error) throw error;
+
+      setDoctorVisits(prev => [...prev, newVisit].sort((a, b) => 
+        new Date(a.visitDate + 'T' + a.visitTime).getTime() - 
+        new Date(b.visitDate + 'T' + b.visitTime).getTime()
+      ));
+      hapticSuccess();
+      toast.success('Návšteva pridaná');
+    } catch (error) {
+      console.error('Error adding doctor visit:', error);
+      hapticError();
+      toast.error('Chyba pri pridávaní návštevy');
+    }
+  };
+
+  const updateDoctorVisit = async (updatedVisit: DoctorVisit) => {
+    try {
+      const dbVisit = doctorVisitToDB(updatedVisit);
+      const { error } = await supabase
+        .from('doctor_visits')
+        .update(dbVisit)
+        .eq('id', updatedVisit.id);
+
+      if (error) throw error;
+
+      setDoctorVisits(prev =>
+        prev.map(v => v.id === updatedVisit.id ? updatedVisit : v)
+          .sort((a, b) => 
+            new Date(a.visitDate + 'T' + a.visitTime).getTime() - 
+            new Date(b.visitDate + 'T' + b.visitTime).getTime()
+          )
+      );
+      hapticSuccess();
+      toast.success('Návšteva aktualizovaná');
+    } catch (error) {
+      console.error('Error updating doctor visit:', error);
+      hapticError();
+      toast.error('Chyba pri aktualizácii návštevy');
+    }
+  };
+
+  const deleteDoctorVisit = async (id: string) => {
+    if (!confirm('Naozaj chcete vymazať túto návštevu?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('doctor_visits')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setDoctorVisits(prev => prev.filter(v => v.id !== id));
+      hapticMedium();
+      toast.success('Návšteva vymazaná');
+    } catch (error) {
+      console.error('Error deleting doctor visit:', error);
+      hapticError();
+      toast.error('Chyba pri mazaní návštevy');
+    }
+  };
+
+  const toggleDoctorVisitCompleted = async (id: string, completed: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('doctor_visits')
+        .update({ completed })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setDoctorVisits(prev =>
+        prev.map(v => v.id === id ? { ...v, completed } : v)
+      );
+      hapticSuccess();
+      toast.success(completed ? 'Návšteva označená ako dokončená' : 'Návšteva označená ako nedokončená');
+    } catch (error) {
+      console.error('Error toggling visit completed:', error);
+      hapticError();
+      toast.error('Chyba pri aktualizácii návštevy');
     }
   };
 
@@ -908,11 +1038,13 @@ function App() {
     setShowWHOPercentiles(false);
     setShowDevelopment(false);
     setShowFormulaGuide(false);
+    setShowSleepTracker(false);
+    setShowDoctorVisits(false);
     setShowMenu(false);
   };
 
   // Check if we're on home screen
-  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide;
+  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide && !showSleepTracker && !showDoctorVisits;
 
 
   if (loading) {
@@ -1050,6 +1182,18 @@ function App() {
                       >
                         <i className="fas fa-moon text-lg text-blue-500"></i>
                         <span className="text-slate-700 font-medium">Spánok</span>
+                      </button>
+                      
+                      {/* Doctor Visits Button */}
+                      <button
+                        onClick={() => {
+                          setShowDoctorVisits(true);
+                          setShowMenu(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3"
+                      >
+                        <i className="fas fa-user-doctor text-lg text-purple-500"></i>
+                        <span className="text-slate-700 font-medium">Návštevy lekárov</span>
                       </button>
                       
                       <div className="border-t border-slate-100 my-1"></div>
@@ -1620,6 +1764,26 @@ function App() {
           onSave={saveSleepSession}
           recentSleeps={sleepSessions}
         />
+      )}
+
+      {/* Doctor Visits */}
+      {showDoctorVisits && (
+        <div className="container mx-auto px-4 py-6">
+          <button
+            onClick={() => setShowDoctorVisits(false)}
+            className="mb-4 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+          >
+            <i className="fas fa-arrow-left mr-2"></i>
+            Späť
+          </button>
+          <DoctorVisits
+            visits={doctorVisits}
+            onAddVisit={addDoctorVisit}
+            onUpdateVisit={updateDoctorVisit}
+            onDeleteVisit={deleteDoctorVisit}
+            onToggleCompleted={toggleDoctorVisitCompleted}
+          />
+        </div>
       )}
 
       {/* Reminders - Only on Home Screen */}

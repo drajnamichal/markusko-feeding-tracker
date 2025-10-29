@@ -49,3 +49,17 @@ export interface SleepSession {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface DoctorVisit {
+  id: string;
+  babyProfileId: string;
+  visitDate: Date;
+  visitTime: string;
+  doctorType: string;
+  doctorName: string;
+  location: string;
+  notes: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
