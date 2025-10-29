@@ -61,14 +61,22 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({
       <button
         onClick={() => setShowSelector(!showSelector)}
         className={`flex items-center gap-2 text-slate-700 hover:text-teal-600 transition-colors ${
-          showNameInButton ? 'px-4 py-2 hover:bg-slate-100 rounded-lg' : 'px-1'
+          showNameInButton 
+            ? 'px-4 py-2 hover:bg-slate-100 rounded-lg' 
+            : 'px-2 py-1 bg-indigo-50 hover:bg-indigo-100 rounded-md border border-indigo-200'
         }`}
         title="Zmeniť profil"
       >
         {showNameInButton && <i className="fas fa-baby text-indigo-500"></i>}
         {showNameInButton && <span className="font-medium">{currentProfile?.name || 'Výber profilu'}</span>}
-        <i className={`fas fa-chevron-${showSelector ? 'up' : 'down'} text-sm ${
-          showNameInButton ? 'text-slate-400' : 'text-slate-600'
+        {!showNameInButton && (
+          <>
+            <i className="fas fa-users text-xs text-indigo-600"></i>
+            <span className="text-xs font-medium text-indigo-700">Profily</span>
+          </>
+        )}
+        <i className={`fas fa-chevron-${showSelector ? 'up' : 'down'} text-xs ${
+          showNameInButton ? 'text-slate-400' : 'text-indigo-600'
         }`}></i>
       </button>
 
@@ -81,7 +89,7 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({
           <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-slate-200 z-50 min-w-[280px] max-w-sm">
             <div className="p-2">
               <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide border-b border-slate-200">
-                Profily bábätok
+                Profily bábätiek
               </div>
               {profiles.length === 0 ? (
                 <div className="px-3 py-4 text-sm text-slate-500 text-center">

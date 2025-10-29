@@ -1077,10 +1077,10 @@ function App() {
     <div className="min-h-screen bg-slate-50 font-sans">
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-4xl">👶</div>
-              <div>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <div className="text-4xl flex-shrink-0">👶</div>
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h1 
                     className="text-2xl font-bold text-slate-700 cursor-pointer hover:text-teal-600 transition-colors"
@@ -1089,6 +1089,24 @@ function App() {
                   >
                     {babyProfile?.name || 'Loading...'}
                   </h1>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowProfileModal(true);
+                    }}
+                    className="text-sm text-slate-400 hover:text-teal-500 transition-colors flex-shrink-0"
+                    title="Upraviť profil"
+                  >
+                    <i className="fas fa-pen-to-square"></i>
+                  </button>
+                </div>
+                
+                {/* Age and Profile Selector row */}
+                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                  <p className="text-sm text-slate-500 whitespace-nowrap">
+                    <i className="fas fa-birthday-cake mr-1"></i>
+                    Vek: {calculateAge()}
+                  </p>
                   {selectedProfileId && (
                     <ProfileSelector
                       currentProfileId={selectedProfileId}
@@ -1097,24 +1115,11 @@ function App() {
                       showNameInButton={false}
                     />
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowProfileModal(true);
-                    }}
-                    className="text-sm text-slate-400 hover:text-teal-500 transition-colors"
-                    title="Upraviť profil"
-                  >
-                    <i className="fas fa-pen-to-square"></i>
-                  </button>
                 </div>
-                <p className="text-sm text-slate-500">
-                  <i className="fas fa-birthday-cake mr-1"></i>
-                  Vek: {calculateAge()}
-                </p>
               </div>
             </div>
-            <div className="relative">
+            
+            <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowMenu(!showMenu)}
                 className="px-4 py-2 rounded-lg font-medium transition-all bg-teal-500 text-white hover:bg-teal-600"
