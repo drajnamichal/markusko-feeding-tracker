@@ -13,6 +13,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Database types
 export interface LogEntryDB {
   id: string;
+  baby_profile_id: string;
   date_time: string;
   poop: boolean;
   pee: boolean;
@@ -33,6 +34,7 @@ export interface LogEntryDB {
 // Convert LogEntry to database format
 export const logEntryToDB = (entry: LogEntry): Omit<LogEntryDB, 'created_at' | 'updated_at'> => ({
   id: entry.id,
+  baby_profile_id: entry.babyProfileId,
   date_time: entry.dateTime.toISOString(),
   poop: entry.poop,
   pee: entry.pee,
@@ -51,6 +53,7 @@ export const logEntryToDB = (entry: LogEntry): Omit<LogEntryDB, 'created_at' | '
 // Convert database format to LogEntry
 export const dbToLogEntry = (dbEntry: LogEntryDB): LogEntry => ({
   id: dbEntry.id,
+  babyProfileId: dbEntry.baby_profile_id,
   dateTime: new Date(dbEntry.date_time),
   poop: dbEntry.poop,
   pee: dbEntry.pee,

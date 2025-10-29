@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import type { LogEntry, BabyProfile, Measurement, SleepSession } from './types';
-import { INITIAL_ENTRIES } from './constants';
 import EntryForm from './components/EntryForm';
 import LogList from './components/LogList';
 import Statistics from './components/Statistics';
@@ -13,6 +12,8 @@ import TummyTimeStopwatch from './components/TummyTimeStopwatch';
 import SleepTracker from './components/SleepTracker';
 import FormulaGuide from './components/FormulaGuide';
 import AIDoctor from './components/AIDoctor';
+import WelcomeSetup from './components/WelcomeSetup';
+import ProfileSelector from './components/ProfileSelector';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
@@ -48,7 +49,11 @@ function App() {
   const [sabSimplexTodayCount, setSabSimplexTodayCount] = useState(0);
   const [hoursSinceLastSabSimplex, setHoursSinceLastSabSimplex] = useState<number | null>(null);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(() => {
+    return localStorage.getItem('selectedProfileId');
+  });
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showWelcomeSetup, setShowWelcomeSetup] = useState(false);
   const [profileSaveState, setProfileSaveState] = useState<'idle' | 'loading' | 'success'>('idle');
   const [showMeasurementModal, setShowMeasurementModal] = useState(false);
   const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
@@ -168,20 +173,35 @@ function App() {
     }
   };
 
-  // Load baby profile and entries from Supabase on mount
+  // Load profiles and check if setup is needed
   useEffect(() => {
-    loadBabyProfile();
-    loadEntries();
+    checkProfilesAndLoad();
   }, []);
+
+  // Load profile when selectedProfileId changes
+  useEffect(() => {
+    if (selectedProfileId) {
+      loadBabyProfile(selectedProfileId);
+      loadEntries(selectedProfileId);
+      localStorage.setItem('selectedProfileId', selectedProfileId);
+    } else {
+      setBabyProfile(null);
+      setEntries([]);
+      setMeasurements([]);
+      setSleepSessions([]);
+    }
+  }, [selectedProfileId]);
 
   // Update document title when baby profile changes
   useEffect(() => {
     if (babyProfile) {
       document.title = babyProfile.name;
-      loadMeasurements();
-      loadSleepSessions();
+      if (selectedProfileId) {
+        loadMeasurements(selectedProfileId);
+        loadSleepSessions(selectedProfileId);
+      }
     }
-  }, [babyProfile]);
+  }, [babyProfile, selectedProfileId]);
 
   // Initialize notification permission state
   useEffect(() => {
@@ -441,19 +461,47 @@ function App() {
     }
   }, [entries, currentTime, loading]);
 
-  const loadBabyProfile = async () => {
+  const checkProfilesAndLoad = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('baby_profile')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        // No profiles exist - show welcome setup
+        setShowWelcomeSetup(true);
+        setLoading(false);
+        return;
+      }
+
+      // Profiles exist - check if we have a selected one
+      const savedProfileId = localStorage.getItem('selectedProfileId');
+      if (savedProfileId && data.some(p => p.id === savedProfileId)) {
+        setSelectedProfileId(savedProfileId);
+      } else {
+        // Use the first profile
+        setSelectedProfileId(data[0].id);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error checking profiles:', error);
+      setLoading(false);
+    }
+  };
+
+  const loadBabyProfile = async (profileId: string) => {
     try {
       const { data, error } = await supabase
         .from('baby_profile')
         .select('*')
-        .limit(1)
+        .eq('id', profileId)
         .single();
 
-      if (error) {
-        // If profile doesn't exist, it should have been created by migration
-        console.error('Error loading baby profile:', error);
-        return;
-      }
+      if (error) throw error;
 
       if (data) {
         const profile = dbToBabyProfile(data as BabyProfileDB);
@@ -461,15 +509,18 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading baby profile:', error);
+      hapticError();
+      toast.error('Chyba pri načítaní profilu');
     }
   };
 
-  const loadEntries = async () => {
+  const loadEntries = async (profileId: string) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('log_entries')
         .select('*')
+        .eq('baby_profile_id', profileId)
         .order('date_time', { ascending: false });
 
       if (error) throw error;
@@ -478,8 +529,7 @@ function App() {
         const entries = data.map(dbToLogEntry);
         setEntries(entries);
       } else {
-        // If no data exists, migrate initial entries
-        await migrateInitialData();
+        setEntries([]);
       }
     } catch (error) {
       console.error('Error loading entries:', error);
@@ -490,26 +540,49 @@ function App() {
     }
   };
 
-  const migrateInitialData = async () => {
+  const createBabyProfile = async (profileData: Omit<BabyProfile, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const dbEntries = INITIAL_ENTRIES.map(logEntryToDB);
-      const { error } = await supabase
-        .from('log_entries')
-        .insert(dbEntries);
+      const dbProfile = babyProfileToDB({
+        ...profileData,
+        id: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as BabyProfile);
+
+      const { data, error } = await supabase
+        .from('baby_profile')
+        .insert([dbProfile])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setEntries(INITIAL_ENTRIES);
+      if (data) {
+        const newProfile = dbToBabyProfile(data as BabyProfileDB);
+        setSelectedProfileId(newProfile.id);
+        setShowWelcomeSetup(false);
+        hapticSuccess();
+        toast.success('Profil vytvorený!');
+      }
     } catch (error) {
-      console.error('Error migrating initial data:', error);
+      console.error('Error creating baby profile:', error);
+      hapticError();
+      toast.error('Chyba pri vytváraní profilu');
+      throw error;
     }
   };
 
-  const addEntry = async (newEntry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => {
+  const addEntry = async (newEntry: Omit<LogEntry, 'id' | 'dateTime' | 'babyProfileId'> & { dateTime: string }) => {
+    if (!selectedProfileId) {
+      toast.error('Vyberte profil bábätka');
+      return;
+    }
+
     const entryWithDate: LogEntry = {
       ...newEntry,
       id: new Date().toISOString() + Math.random(),
       dateTime: new Date(newEntry.dateTime),
+      babyProfileId: selectedProfileId,
     };
 
     try {
@@ -633,11 +706,14 @@ function App() {
   };
 
   const addMeasurement = async (weightGrams: number, heightCm: number | null, headCircumferenceCm: number | null, notes: string) => {
-    if (!babyProfile) return;
+    if (!selectedProfileId) {
+      toast.error('Vyberte profil bábätka');
+      return;
+    }
 
     const newMeasurement: Measurement = {
       id: new Date().toISOString() + Math.random(),
-      babyProfileId: babyProfile.id,
+      babyProfileId: selectedProfileId,
       measuredAt: new Date(),
       weightGrams: weightGrams || 0,
       heightCm: heightCm || 0,
@@ -721,14 +797,12 @@ function App() {
     setEditingMeasurement(null);
   };
 
-  const loadMeasurements = async () => {
-    if (!babyProfile) return;
-
+  const loadMeasurements = async (profileId: string) => {
     try {
       const { data, error } = await supabase
         .from('measurements')
         .select('*')
-        .eq('baby_profile_id', babyProfile.id)
+        .eq('baby_profile_id', profileId)
         .order('measured_at', { ascending: false });
 
       if (error) throw error;
@@ -736,6 +810,8 @@ function App() {
       if (data && data.length > 0) {
         const measurements = data.map(dbToMeasurement);
         setMeasurements(measurements);
+      } else {
+        setMeasurements([]);
       }
     } catch (error) {
       console.error('Error loading measurements:', error);
@@ -743,8 +819,13 @@ function App() {
   };
 
   const saveTummyTime = async (seconds: number) => {
+    if (!selectedProfileId) {
+      toast.error('Vyberte profil bábätka');
+      return;
+    }
+
     const now = new Date();
-    const newEntry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
+    const newEntry: Omit<LogEntry, 'id' | 'dateTime' | 'babyProfileId'> & { dateTime: string } = {
       dateTime: now.toISOString(),
       poop: false,
       pee: false,
@@ -763,14 +844,12 @@ function App() {
     await addEntry(newEntry);
   };
 
-  const loadSleepSessions = async () => {
-    if (!babyProfile) return;
-
+  const loadSleepSessions = async (profileId: string) => {
     try {
       const { data, error } = await supabase
         .from('sleep_sessions')
         .select('*')
-        .eq('baby_profile_id', babyProfile.id)
+        .eq('baby_profile_id', profileId)
         .order('start_time', { ascending: false });
 
       if (error) throw error;
@@ -785,11 +864,14 @@ function App() {
   };
 
   const saveSleepSession = async (startTime: Date, endTime: Date, durationMinutes: number) => {
-    if (!babyProfile) return;
+    if (!selectedProfileId) {
+      toast.error('Vyberte profil bábätka');
+      return;
+    }
 
     const newSession: SleepSession = {
       id: new Date().toISOString() + Math.random(),
-      babyProfileId: babyProfile.id,
+      babyProfileId: selectedProfileId,
       startTime: startTime,
       endTime: endTime,
       durationMinutes: durationMinutes,
@@ -837,6 +919,11 @@ function App() {
     return <AppLoadingSkeleton />;
   }
 
+  // Show welcome setup screen if no profiles exist
+  if (showWelcomeSetup) {
+    return <WelcomeSetup onCreateProfile={createBabyProfile} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       <header className="bg-white shadow-sm sticky top-0 z-10">
@@ -868,7 +955,15 @@ function App() {
                 </p>
               </div>
             </div>
-            <div className="relative">
+            <div className="flex items-center gap-3">
+              {selectedProfileId && (
+                <ProfileSelector
+                  currentProfileId={selectedProfileId}
+                  onSelectProfile={setSelectedProfileId}
+                  onCreateNew={() => setShowWelcomeSetup(true)}
+                />
+              )}
+              <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
                 className="px-4 py-2 rounded-lg font-medium transition-all bg-teal-500 text-white hover:bg-teal-600"
@@ -1087,6 +1182,7 @@ function App() {
                   </div>
                 </>
               )}
+              </div>
             </div>
           </div>
         </div>

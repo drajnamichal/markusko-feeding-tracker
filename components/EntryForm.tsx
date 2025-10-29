@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import type { LogEntry } from '../types';
 
 interface EntryFormProps {
-  onAddEntry: (entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string }) => Promise<void>;
+  onAddEntry: (entry: Omit<LogEntry, 'id' | 'dateTime' | 'babyProfileId'> & { dateTime: string }) => Promise<void>;
   editingEntry?: LogEntry | null;
   onUpdateEntry?: (entry: LogEntry) => Promise<void>;
   onCancelEdit?: () => void;

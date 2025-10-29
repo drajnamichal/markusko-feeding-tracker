@@ -1,5 +1,6 @@
 export interface LogEntry {
   id: string;
+  babyProfileId: string;
   dateTime: Date;
   poop: boolean;
   pee: boolean;
