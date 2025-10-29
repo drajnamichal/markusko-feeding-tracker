@@ -896,28 +896,35 @@ function App() {
       return;
     }
 
-    const newVisit: DoctorVisit = {
-      id: new Date().toISOString() + Math.random(),
-      babyProfileId: selectedProfileId,
-      ...visitData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
     try {
-      const dbVisit = doctorVisitToDB(newVisit);
-      const { error } = await supabase
+      // Prepare data for insert (without id, let Supabase generate UUID)
+      const dbVisit = {
+        baby_profile_id: selectedProfileId,
+        visit_date: visitData.visitDate.toISOString().split('T')[0],
+        visit_time: visitData.visitTime,
+        doctor_type: visitData.doctorType,
+        doctor_name: visitData.doctorName || '',
+        location: visitData.location || '',
+        notes: visitData.notes || '',
+        completed: visitData.completed,
+      };
+
+      const { data, error } = await supabase
         .from('doctor_visits')
-        .insert([dbVisit]);
+        .insert([dbVisit])
+        .select();
 
       if (error) throw error;
 
-      setDoctorVisits(prev => [...prev, newVisit].sort((a, b) => 
-        new Date(a.visitDate + 'T' + a.visitTime).getTime() - 
-        new Date(b.visitDate + 'T' + b.visitTime).getTime()
-      ));
-      hapticSuccess();
-      toast.success('Návšteva pridaná');
+      if (data && data.length > 0) {
+        const insertedVisit = dbToDoctorVisit(data[0]);
+        setDoctorVisits(prev => [...prev, insertedVisit].sort((a, b) => 
+          new Date(a.visitDate + 'T' + a.visitTime).getTime() - 
+          new Date(b.visitDate + 'T' + b.visitTime).getTime()
+        ));
+        hapticSuccess();
+        toast.success('Návšteva pridaná');
+      }
     } catch (error) {
       console.error('Error adding doctor visit:', error);
       hapticError();
@@ -927,7 +934,17 @@ function App() {
 
   const updateDoctorVisit = async (updatedVisit: DoctorVisit) => {
     try {
-      const dbVisit = doctorVisitToDB(updatedVisit);
+      const dbVisit = {
+        baby_profile_id: updatedVisit.babyProfileId,
+        visit_date: updatedVisit.visitDate.toISOString().split('T')[0],
+        visit_time: updatedVisit.visitTime,
+        doctor_type: updatedVisit.doctorType,
+        doctor_name: updatedVisit.doctorName || '',
+        location: updatedVisit.location || '',
+        notes: updatedVisit.notes || '',
+        completed: updatedVisit.completed,
+      };
+
       const { error } = await supabase
         .from('doctor_visits')
         .update(dbVisit)
@@ -936,7 +953,7 @@ function App() {
       if (error) throw error;
 
       setDoctorVisits(prev =>
-        prev.map(v => v.id === updatedVisit.id ? updatedVisit : v)
+        prev.map(v => v.id === updatedVisit.id ? { ...updatedVisit, updatedAt: new Date() } : v)
           .sort((a, b) => 
             new Date(a.visitDate + 'T' + a.visitTime).getTime() - 
             new Date(b.visitDate + 'T' + b.visitTime).getTime()
