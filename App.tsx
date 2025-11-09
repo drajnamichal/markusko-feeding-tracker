@@ -47,8 +47,8 @@ function App() {
   const [daysSinceLastSterilization, setDaysSinceLastSterilization] = useState(0);
   const [showBathingReminder, setShowBathingReminder] = useState(false);
   const [daysSinceLastBathing, setDaysSinceLastBathing] = useState(0);
-  const [sabSimplexTodayCount, setSabSimplexTodayCount] = useState(0);
-  const [hoursSinceLastSabSimplex, setHoursSinceLastSabSimplex] = useState<number | null>(null);
+  const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
+  const [daysSinceLastVitaminD, setDaysSinceLastVitaminD] = useState(0);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(() => {
     return localStorage.getItem('selectedProfileId');
@@ -78,7 +78,6 @@ function App() {
   const [showMenu, setShowMenu] = useState(false);
   const [todayMilkIntake, setTodayMilkIntake] = useState({ current: 0, target150: 0, target180: 0, weight: 0 });
   const [lastFeedingNotificationTime, setLastFeedingNotificationTime] = useState<number>(0);
-  const [lastSabSimplexNotificationTime, setLastSabSimplexNotificationTime] = useState<number>(0);
 
   // Request notification permission
   const requestNotificationPermission = async () => {
@@ -133,23 +132,6 @@ function App() {
     setLastFeedingNotificationTime(now);
   };
 
-  // Send SAB Simplex notification
-  const sendSabSimplexNotification = () => {
-    const now = Date.now();
-    // Prevent spam - only send if 30+ minutes since last notification
-    if (now - lastSabSimplexNotificationTime < 30 * 60 * 1000) {
-      return;
-    }
-    
-    sendNotification(
-      '💊 SAB Simplex reminder',
-      'Uplynulo 4 hodiny od poslednej dávky. Môžete podať ďalších 10 kvapiek.',
-      'sab-simplex-reminder'
-    );
-    
-    setLastSabSimplexNotificationTime(now);
-  };
-
   // Calculate baby's age
   const calculateAge = () => {
     if (!babyProfile) return '...';
@@ -174,6 +156,24 @@ function App() {
       }
       return `${months} ${monthText}, ${remainingDays} ${dayText}`;
     }
+  };
+
+  // Calculate age in days
+  const calculateAgeDays = () => {
+    if (!babyProfile) return 0;
+    const birthDate = new Date(babyProfile.birthDate);
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  // Calculate age in weeks
+  const calculateAgeWeeksDetailed = () => {
+    if (!babyProfile) return { weeks: 0, days: 0 };
+    const totalDays = calculateAgeDays();
+    const weeks = Math.floor(totalDays / 7);
+    const days = totalDays % 7;
+    return { weeks, days };
   };
 
   // Load profiles and check if setup is needed
@@ -241,34 +241,6 @@ function App() {
 
     return () => clearInterval(interval);
   }, [entries, feedingNotificationsEnabled, lastFeedingNotificationTime]);
-
-  // Check for SAB Simplex reminder every minute
-  useEffect(() => {
-    if (!feedingNotificationsEnabled || !entries.length) return;
-
-    const checkSabSimplexTime = () => {
-      const now = new Date();
-      const sabSimplexEntries = entries
-        .filter(e => e.sabSimplex)
-        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
-
-      if (sabSimplexEntries.length > 0) {
-        const lastSabSimplex = sabSimplexEntries[0];
-        const hoursSinceLastDose = (now.getTime() - lastSabSimplex.dateTime.getTime()) / (1000 * 60 * 60);
-
-        // Notify if 4+ hours since last SAB Simplex dose (spam prevention in sendSabSimplexNotification)
-        if (hoursSinceLastDose >= 4) {
-          sendSabSimplexNotification();
-        }
-      }
-    };
-
-    // Check immediately and then every minute
-    checkSabSimplexTime();
-    const interval = setInterval(checkSabSimplexTime, 60000); // Check every minute
-
-    return () => clearInterval(interval);
-  }, [entries, feedingNotificationsEnabled, lastSabSimplexNotificationTime]);
 
   // Calculate today's milk intake
   useEffect(() => {
@@ -403,34 +375,32 @@ function App() {
     }
   }, [entries, loading]);
 
-  // Check SAB Simplex doses
+  // Check for Vitamin D reminder (every other day - every 1+ days)
   useEffect(() => {
     if (!loading) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
-      const sabSimplexEntries = entries.filter(e => {
-        const entryDate = new Date(e.dateTime);
-        entryDate.setHours(0, 0, 0, 0);
-        return entryDate.getTime() === today.getTime() && e.sabSimplex;
-      });
-
-      setSabSimplexTodayCount(sabSimplexEntries.length);
-
-      // Calculate time since last dose
-      const allSabSimplexEntries = entries
-        .filter(e => e.sabSimplex)
+      // Find last Vitamin D entry
+      const vitaminDEntries = entries
+        .filter(entry => entry.vitaminD)
         .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
 
-      if (allSabSimplexEntries.length > 0) {
-        const lastDose = allSabSimplexEntries[0];
-        const hoursSince = (currentTime.getTime() - lastDose.dateTime.getTime()) / (1000 * 60 * 60);
-        setHoursSinceLastSabSimplex(hoursSince);
+      if (vitaminDEntries.length > 0) {
+        const lastVitaminD = vitaminDEntries[0].dateTime;
+        const lastVitaminDDay = new Date(lastVitaminD.getFullYear(), lastVitaminD.getMonth(), lastVitaminD.getDate());
+        const diffTime = today.getTime() - lastVitaminDDay.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        setDaysSinceLastVitaminD(diffDays);
+        setShowVitaminDReminder(diffDays >= 1); // Show reminder every other day (1+ days)
       } else {
-        setHoursSinceLastSabSimplex(null);
+        // No Vitamin D recorded yet - show reminder
+        setDaysSinceLastVitaminD(999);
+        setShowVitaminDReminder(true);
       }
     }
-  }, [entries, currentTime, loading]);
+  }, [entries, loading]);
 
   // Update current time every minute for live stopwatch
   useEffect(() => {
@@ -1102,19 +1072,39 @@ function App() {
                 </div>
                 
                 {/* Age and Profile Selector row */}
-                <div className="flex items-center gap-3 mt-1 flex-wrap">
-                  <p className="text-sm text-slate-500 whitespace-nowrap">
-                    <i className="fas fa-birthday-cake mr-1"></i>
-                    Vek: {calculateAge()}
-                  </p>
-                  {selectedProfileId && (
-                    <ProfileSelector
-                      currentProfileId={selectedProfileId}
-                      onSelectProfile={setSelectedProfileId}
-                      onCreateNew={() => setShowWelcomeSetup(true)}
-                      showNameInButton={false}
-                    />
-                  )}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <p className="text-sm text-slate-500 whitespace-nowrap">
+                      <i className="fas fa-birthday-cake mr-1"></i>
+                      Vek: {calculateAge()}
+                    </p>
+                    {selectedProfileId && (
+                      <ProfileSelector
+                        currentProfileId={selectedProfileId}
+                        onSelectProfile={setSelectedProfileId}
+                        onCreateNew={() => setShowWelcomeSetup(true)}
+                        showNameInButton={false}
+                      />
+                    )}
+                  </div>
+                  {babyProfile && (() => {
+                    const totalDays = calculateAgeDays();
+                    const { weeks, days } = calculateAgeWeeksDetailed();
+                    return (
+                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                        <span>
+                          <i className="fas fa-calendar-days mr-1"></i>
+                          {totalDays} {totalDays === 1 ? 'deň' : totalDays < 5 ? 'dni' : 'dní'}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          <i className="fas fa-calendar-week mr-1"></i>
+                          {weeks} {weeks === 1 ? 'týždeň' : weeks < 5 ? 'týždne' : 'týždňov'}
+                          {days > 0 && ` + ${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'}`}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -1857,6 +1847,36 @@ function App() {
           </div>
         )}
 
+        {showVitaminDReminder && (
+          <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-sun text-3xl text-orange-500"></i>
+              <div>
+                <p className="font-bold text-orange-800">💊 Pripomienka: Vitamín D</p>
+                <p className="text-sm text-orange-700">
+                  {daysSinceLastVitaminD >= 999 
+                    ? 'Ešte ste nezaznamenali Vitamín D!' 
+                    : daysSinceLastVitaminD === 1
+                    ? 'Prešiel 1 deň od poslednej dávky. Čas na Vitamín D!'
+                    : `Prešlo ${daysSinceLastVitaminD} dni od poslednej dávky. Čas na Vitamín D!`
+                  }
+                </p>
+                <p className="text-xs text-orange-600 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Dávkovanie: Každý druhý deň (1x denne)
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowVitaminDReminder(false)}
+              className="text-orange-500 hover:text-orange-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
         {/* ======= TRACKING WIDGETS SECTION ======= */}
         {/* Tummy Time Widget with WHO Recommendations */}
         {babyProfile && (() => {
@@ -1940,63 +1960,6 @@ function App() {
             </div>
           );
         })()}
-
-        {/* SAB Simplex Widget */}
-        {hoursSinceLastSabSimplex === null ? (
-          /* Initial reminder - no doses ever */
-          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-pills text-3xl text-purple-500"></i>
-              <div>
-                <p className="font-bold text-purple-800">💊 Nezabudni dať SAB Simplex</p>
-                <p className="text-sm text-purple-700">10 kvapiek do mlieka</p>
-                <p className="text-xs text-purple-600 mt-1">
-                  <i className="fas fa-info-circle mr-1"></i>
-                  Dávkovanie: 4x denne, každé 4-6 hodín
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {/* User will add entry */}}
-              className="text-purple-500 hover:text-purple-700 transition-colors"
-              aria-label="Info"
-            >
-              <i className="fas fa-info-circle text-xl"></i>
-            </button>
-          </div>
-        ) : (
-          /* Tracking widget - shows time since LAST dose (even from yesterday) */
-          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg shadow-md">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-pills text-3xl text-purple-500"></i>
-              <div className="flex-1">
-                <p className="font-bold text-purple-800 mb-1">💊 SAB Simplex</p>
-                <div className="text-sm text-purple-700 space-y-1">
-                  <p>
-                    Od poslednej dávky: <span className="font-bold text-xl">{hoursSinceLastSabSimplex.toFixed(1)}h</span>
-                    {hoursSinceLastSabSimplex >= 4 ? (
-                      <span className="ml-2 text-green-600 font-bold">✓ Môžete podať ďalšiu dávku</span>
-                    ) : (
-                      <span className="ml-2 text-amber-600">
-                        Ďalšia dávka za {(4 - hoursSinceLastSabSimplex).toFixed(1)}h
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-purple-600">
-                    Dnes: <span className="font-semibold">{sabSimplexTodayCount}/4</span> dávok
-                    {sabSimplexTodayCount < 4 && (
-                      <span className="ml-1">(ešte {4 - sabSimplexTodayCount}x)</span>
-                    )}
-                  </p>
-                  <p className="text-xs text-purple-600 mt-2">
-                    <i className="fas fa-info-circle mr-1"></i>
-                    Dávkovanie: 4x10 kvapiek (každé 4-6 hodín)
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Daily Milk Intake Widget */}
         {todayMilkIntake.weight > 0 && (

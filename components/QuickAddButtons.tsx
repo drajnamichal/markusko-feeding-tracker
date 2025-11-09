@@ -233,39 +233,6 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
           {getButtonContent('vitamin-d', 'fas fa-sun', 'Vitamín D')}
         </button>
 
-        {/* SAB Simplex */}
-        <button
-          onClick={async () => {
-            const buttonId = 'sab-simplex';
-            hapticLight();
-            setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
-            const now = new Date();
-            const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
-              dateTime: now.toISOString(),
-              poop: false,
-              pee: false,
-              breastMilkMl: 0,
-              breastfed: false,
-              formulaMl: 0,
-              vomit: false,
-              vitaminD: false,
-              tummyTime: false,
-              sterilization: false,
-              bathing: false,
-              sabSimplex: true,
-              notes: 'Rýchle pridanie: SAB Simplex',
-            };
-            await onQuickAdd(entry);
-            setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
-            setTimeout(() => {
-              setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
-            }, 1500);
-          }}
-          disabled={buttonStates['sab-simplex'] === 'loading' || buttonStates['sab-simplex'] === 'success'}
-          className={getButtonClass('sab-simplex', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
-        >
-          {getButtonContent('sab-simplex', 'fas fa-pills', 'SAB Simplex')}
-        </button>
       </div>
 
       <p className="text-white/60 text-xs mt-3 text-center">

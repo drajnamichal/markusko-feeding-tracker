@@ -134,7 +134,6 @@ ${recentEntries.map((entry, i) => {
   if (entry.tummyTime) parts.push('tummy time');
   if (entry.sterilization) parts.push('sterilizácia');
   if (entry.bathing) parts.push('kúpanie');
-  if (entry.sabSimplex) parts.push('SAB Simplex');
   if (entry.notes) parts.push(`poznámka: "${entry.notes}"`);
   
   return parts.join(' | ');

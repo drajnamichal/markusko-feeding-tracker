@@ -28,7 +28,6 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
   const [tummyTime, setTummyTime] = useState(false);
   const [sterilization, setSterilization] = useState(false);
   const [bathing, setBathing] = useState(false);
-  const [sabSimplex, setSabSimplex] = useState(false);
   const [breastMilkMl, setBreastMilkMl] = useState('');
   const [formulaMl, setFormulaMl] = useState('');
   const [notes, setNotes] = useState('');
@@ -75,7 +74,6 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
       setTummyTime(editingEntry.tummyTime);
       setSterilization(editingEntry.sterilization);
       setBathing(editingEntry.bathing);
-      setSabSimplex(editingEntry.sabSimplex);
       setBreastMilkMl(editingEntry.breastMilkMl > 0 ? String(editingEntry.breastMilkMl) : '');
       setFormulaMl(editingEntry.formulaMl > 0 ? String(editingEntry.formulaMl) : '');
       setNotes(editingEntry.notes);
@@ -100,7 +98,6 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
           tummyTime,
           sterilization,
           bathing,
-          sabSimplex,
           breastMilkMl: Number(breastMilkMl) || 0,
           formulaMl: Number(formulaMl) || 0,
           notes,
@@ -117,7 +114,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
           tummyTime,
           sterilization,
           bathing,
-          sabSimplex,
+          sabSimplex: false,
           breastMilkMl: Number(breastMilkMl) || 0,
           formulaMl: Number(formulaMl) || 0,
           notes,
@@ -146,7 +143,6 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
     setTummyTime(false);
     setSterilization(false);
     setBathing(false);
-    setSabSimplex(false);
     setBreastMilkMl('');
     setFormulaMl('');
     setNotes('');
@@ -210,10 +206,6 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
             <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
                 <input type="checkbox" checked={bathing} onChange={(e) => setBathing(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-blue-500 focus:ring-blue-400"/>
                 <span className="text-slate-700">Kúpanie</span>
-            </label>
-            <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-md hover:bg-slate-100 transition-colors">
-                <input type="checkbox" checked={sabSimplex} onChange={(e) => setSabSimplex(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-purple-500 focus:ring-purple-400"/>
-                <span className="text-slate-700">SAB Simplex</span>
             </label>
         </div>
 
