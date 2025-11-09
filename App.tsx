@@ -1073,20 +1073,10 @@ function App() {
                 
                 {/* Age and Profile Selector row */}
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <p className="text-sm text-slate-500 whitespace-nowrap">
-                      <i className="fas fa-birthday-cake mr-1"></i>
-                      Vek: {calculateAge()}
-                    </p>
-                    {selectedProfileId && (
-                      <ProfileSelector
-                        currentProfileId={selectedProfileId}
-                        onSelectProfile={setSelectedProfileId}
-                        onCreateNew={() => setShowWelcomeSetup(true)}
-                        showNameInButton={false}
-                      />
-                    )}
-                  </div>
+                  <p className="text-sm text-slate-500 whitespace-nowrap">
+                    <i className="fas fa-birthday-cake mr-1"></i>
+                    Vek: {calculateAge()}
+                  </p>
                   {babyProfile && (() => {
                     const totalDays = calculateAgeDays();
                     const { weeks, days } = calculateAgeWeeksDetailed();
@@ -1105,6 +1095,16 @@ function App() {
                       </div>
                     );
                   })()}
+                  {selectedProfileId && (
+                    <div className="mt-1">
+                      <ProfileSelector
+                        currentProfileId={selectedProfileId}
+                        onSelectProfile={setSelectedProfileId}
+                        onCreateNew={() => setShowWelcomeSetup(true)}
+                        showNameInButton={false}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
