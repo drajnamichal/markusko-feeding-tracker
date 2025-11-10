@@ -2026,7 +2026,8 @@ function App() {
 
         {/* Last Bottle Feeding Stopwatch */}
         {lastBottleFeedingData && (() => {
-          const nextFeedingTime = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (2 * 60 * 60 * 1000));
+          const nextFeedingTime2h = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (2 * 60 * 60 * 1000));
+          const nextFeedingTime3h = new Date(lastBottleFeedingData.entry.dateTime.getTime() + (3 * 60 * 60 * 1000));
           return (
             <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-xl shadow-lg">
               <div className="flex items-center justify-between">
@@ -2046,10 +2047,14 @@ function App() {
                     {lastBottleFeedingData.entry.breastMilkMl > 0 && lastBottleFeedingData.entry.formulaMl > 0 && ' + '}
                     {lastBottleFeedingData.entry.formulaMl > 0 && `${lastBottleFeedingData.entry.formulaMl}ml umelé`}
                   </p>
-                  <div className="border-t border-white/20 pt-2 mt-2">
+                  <div className="border-t border-white/20 pt-2 mt-2 space-y-1">
                     <p className="text-sm opacity-90">
                       <i className="fas fa-clock mr-1"></i>
-                      <span className="font-semibold">Nasledujúce kŕmenie:</span> {nextFeedingTime.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                      <span className="font-semibold">Po 2 hodinách:</span> {nextFeedingTime2h.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    <p className="text-sm opacity-90">
+                      <i className="fas fa-clock mr-1"></i>
+                      <span className="font-semibold">Po 3 hodinách:</span> {nextFeedingTime3h.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                 </div>
