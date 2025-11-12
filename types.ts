@@ -10,6 +10,7 @@ export interface LogEntry {
   vomit: boolean;
   vitaminD: boolean;
   vitaminC: boolean;
+  probiotic: boolean;
   tummyTime: boolean;
   sterilization: boolean;
   bathing: boolean;

@@ -132,6 +132,7 @@ ${recentEntries.map((entry, i) => {
   if (entry.vomit) parts.push('zvracanie');
   if (entry.vitaminD) parts.push('vitamín D');
   if (entry.vitaminC) parts.push('vitamín C');
+  if (entry.probiotic) parts.push('probiotiká');
   if (entry.tummyTime) parts.push('tummy time');
   if (entry.sterilization) parts.push('sterilizácia');
   if (entry.bathing) parts.push('kúpanie');

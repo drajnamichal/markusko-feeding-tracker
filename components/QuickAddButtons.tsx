@@ -27,6 +27,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       vomit: false,
       vitaminD: false,
       vitaminC: false,
+      probiotic: false,
       tummyTime: false,
       sterilization: false,
       bathing: false,
@@ -58,6 +59,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       vomit: false,
       vitaminD: false,
       vitaminC: false,
+      probiotic: false,
       tummyTime: false,
       sterilization: false,
       bathing: false,
@@ -89,6 +91,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       vomit: false,
       vitaminD: false,
       vitaminC: false,
+      probiotic: false,
       tummyTime: false,
       sterilization: false,
       bathing: false,
@@ -219,6 +222,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
               vomit: false,
               vitaminD: true,
               vitaminC: false,
+              probiotic: false,
               tummyTime: false,
               sterilization: false,
               bathing: false,
@@ -254,6 +258,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
               vomit: false,
               vitaminD: false,
               vitaminC: true,
+              probiotic: false,
               tummyTime: false,
               sterilization: false,
               bathing: false,
@@ -270,6 +275,42 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
           className={getButtonClass('vitamin-c', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
           {getButtonContent('vitamin-c', 'fas fa-lemon', 'Vitamín C')}
+        </button>
+
+        {/* Probiotic */}
+        <button
+          onClick={async () => {
+            const buttonId = 'probiotic';
+            hapticLight();
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
+            const now = new Date();
+            const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
+              dateTime: now.toISOString(),
+              poop: false,
+              pee: false,
+              breastMilkMl: 0,
+              breastfed: false,
+              formulaMl: 0,
+              vomit: false,
+              vitaminD: false,
+              vitaminC: false,
+              probiotic: true,
+              tummyTime: false,
+              sterilization: false,
+              bathing: false,
+              sabSimplex: false,
+              notes: 'Rýchle pridanie: Probiotiká',
+            };
+            await onQuickAdd(entry);
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+            setTimeout(() => {
+              setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+            }, 1500);
+          }}
+          disabled={buttonStates['probiotic'] === 'loading' || buttonStates['probiotic'] === 'success'}
+          className={getButtonClass('probiotic', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
+        >
+          {getButtonContent('probiotic', 'fas fa-bacterium', 'Probiotiká')}
         </button>
 
       </div>

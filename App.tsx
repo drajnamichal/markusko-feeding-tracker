@@ -51,6 +51,8 @@ function App() {
   const [daysSinceLastVitaminD, setDaysSinceLastVitaminD] = useState(0);
   const [showVitaminCReminder, setShowVitaminCReminder] = useState(false);
   const [daysSinceLastVitaminC, setDaysSinceLastVitaminC] = useState(0);
+  const [showProbioticReminder, setShowProbioticReminder] = useState(false);
+  const [daysSinceLastProbiotic, setDaysSinceLastProbiotic] = useState(0);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(() => {
     return localStorage.getItem('selectedProfileId');
@@ -427,6 +429,33 @@ function App() {
         // No Vitamin C recorded yet - show reminder
         setDaysSinceLastVitaminC(999);
         setShowVitaminCReminder(true);
+      }
+    }
+  }, [entries, loading]);
+
+  // Check for Probiotic reminder (every day - every 1+ days)
+  useEffect(() => {
+    if (!loading) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      // Find last Probiotic entry
+      const probioticEntries = entries
+        .filter(entry => entry.probiotic)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (probioticEntries.length > 0) {
+        const lastProbiotic = probioticEntries[0].dateTime;
+        const lastProbioticDay = new Date(lastProbiotic.getFullYear(), lastProbiotic.getMonth(), lastProbiotic.getDate());
+        const diffTime = today.getTime() - lastProbioticDay.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        setDaysSinceLastProbiotic(diffDays);
+        setShowProbioticReminder(diffDays >= 1); // Show reminder every day (1+ days)
+      } else {
+        // No Probiotic recorded yet - show reminder
+        setDaysSinceLastProbiotic(999);
+        setShowProbioticReminder(true);
       }
     }
   }, [entries, loading]);
@@ -838,6 +867,7 @@ function App() {
       vomit: false,
       vitaminD: false,
       vitaminC: false,
+      probiotic: false,
       tummyTime: true,
       sterilization: false,
       bathing: false,
@@ -1930,6 +1960,36 @@ function App() {
             <button
               onClick={() => setShowVitaminCReminder(false)}
               className="text-yellow-500 hover:text-yellow-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {showProbioticReminder && (
+          <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-bacterium text-3xl text-green-500"></i>
+              <div>
+                <p className="font-bold text-green-800">💊 Pripomienka: Probiotiká (ProbioMaxik Baby)</p>
+                <p className="text-sm text-green-700">
+                  {daysSinceLastProbiotic >= 999 
+                    ? 'Ešte ste nezaznamenali probiotiká!' 
+                    : daysSinceLastProbiotic === 1
+                    ? 'Prešiel 1 deň od poslednej dávky. Čas na probiotiká!'
+                    : `Prešlo ${daysSinceLastProbiotic} dni od poslednej dávky. Čas na probiotiká!`
+                  }
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Dávkovanie: 9 kvapiek denne s malým množstvom materského mlieka, detskej výživy alebo iného jedla
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowProbioticReminder(false)}
+              className="text-green-500 hover:text-green-700 transition-colors"
               aria-label="Zavrieť pripomienku"
             >
               <i className="fas fa-times text-xl"></i>
