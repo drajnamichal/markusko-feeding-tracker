@@ -1870,7 +1870,12 @@ function App() {
               <i className="fas fa-flask text-3xl text-cyan-500"></i>
               <div>
                 <p className="font-bold text-cyan-800">Pripomienka: Sterilizácia fliaš</p>
-                <p className="text-sm text-cyan-700">Čas na novú sterilizáciu!</p>
+                <p className="text-sm text-cyan-700">
+                  {daysSinceLastSterilization >= 999 
+                    ? 'Ešte ste nezaznamenali sterilizáciu!' 
+                    : `Posledná sterilizácia pred ${daysSinceLastSterilization} ${daysSinceLastSterilization === 1 ? 'dňom' : 'dňami'}`
+                  }
+                </p>
               </div>
             </div>
             <button
