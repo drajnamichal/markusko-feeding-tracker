@@ -1921,7 +1921,9 @@ function App() {
                 <p className="text-sm text-orange-700">
                   {daysSinceLastVitaminD >= 999 
                     ? 'Ešte ste nezaznamenali Vitamín D!' 
-                    : `Prešlo ${daysSinceLastVitaminD} ${daysSinceLastVitaminD === 1 ? 'deň' : 'dni'} od poslednej dávky`
+                    : daysSinceLastVitaminD === 1
+                    ? ''
+                    : `Prešlo ${daysSinceLastVitaminD} dni od poslednej dávky`
                   }
                 </p>
                 <p className="text-xs text-orange-600 mt-1">
@@ -1976,10 +1978,8 @@ function App() {
                 <p className="font-bold text-green-800">💊 Pripomienka: Probiotiká (ProbioMaxik Baby)</p>
                 <p className="text-sm text-green-700">
                   {daysSinceLastProbiotic >= 999 
-                    ? 'Ešte ste nezaznamenali probiotiká!' 
-                    : daysSinceLastProbiotic === 1
-                    ? 'Prešiel 1 deň od poslednej dávky. Čas na probiotiká!'
-                    : `Prešlo ${daysSinceLastProbiotic} dni od poslednej dávky. Čas na probiotiká!`
+                    ? '' 
+                    : `Prešlo ${daysSinceLastProbiotic} ${daysSinceLastProbiotic === 1 ? 'deň' : 'dni'} od poslednej dávky`
                   }
                 </p>
                 <p className="text-xs text-green-600 mt-1">
