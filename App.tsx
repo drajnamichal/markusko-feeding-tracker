@@ -1892,7 +1892,7 @@ function App() {
                 <p className="text-sm text-blue-700">
                   {daysSinceLastBathing >= 999 
                     ? 'Ešte ste nezaznamenali kúpanie!' 
-                    : `Posledné kúpanie pred ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dňom' : 'dňami'}. Čas na kúpanie!`
+                    : `Posledné kúpanie pred ${daysSinceLastBathing} ${daysSinceLastBathing === 1 ? 'dňom' : 'dňami'}`
                   }
                 </p>
               </div>
@@ -1916,9 +1916,7 @@ function App() {
                 <p className="text-sm text-orange-700">
                   {daysSinceLastVitaminD >= 999 
                     ? 'Ešte ste nezaznamenali Vitamín D!' 
-                    : daysSinceLastVitaminD === 1
-                    ? 'Prešiel 1 deň od poslednej dávky. Čas na Vitamín D!'
-                    : `Prešlo ${daysSinceLastVitaminD} dni od poslednej dávky. Čas na Vitamín D!`
+                    : `Prešlo ${daysSinceLastVitaminD} ${daysSinceLastVitaminD === 1 ? 'deň' : 'dni'} od poslednej dávky`
                   }
                 </p>
                 <p className="text-xs text-orange-600 mt-1">
@@ -1945,10 +1943,8 @@ function App() {
                 <p className="font-bold text-yellow-800">💊 Pripomienka: Vitamín C</p>
                 <p className="text-sm text-yellow-700">
                   {daysSinceLastVitaminC >= 999 
-                    ? 'Ešte ste nezaznamenali Vitamín C!' 
-                    : daysSinceLastVitaminC === 1
-                    ? 'Prešiel 1 deň od poslednej dávky. Čas na Vitamín C!'
-                    : `Prešlo ${daysSinceLastVitaminC} dni od poslednej dávky. Čas na Vitamín C!`
+                    ? '' 
+                    : `Prešlo ${daysSinceLastVitaminC} ${daysSinceLastVitaminC === 1 ? 'deň' : 'dni'} od poslednej dávky`
                   }
                 </p>
                 <p className="text-xs text-yellow-600 mt-1">
