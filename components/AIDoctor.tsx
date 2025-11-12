@@ -131,6 +131,7 @@ ${recentEntries.map((entry, i) => {
   if (entry.pee) parts.push('moč');
   if (entry.vomit) parts.push('zvracanie');
   if (entry.vitaminD) parts.push('vitamín D');
+  if (entry.vitaminC) parts.push('vitamín C');
   if (entry.tummyTime) parts.push('tummy time');
   if (entry.sterilization) parts.push('sterilizácia');
   if (entry.bathing) parts.push('kúpanie');

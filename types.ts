@@ -9,6 +9,7 @@ export interface LogEntry {
   formulaMl: number;
   vomit: boolean;
   vitaminD: boolean;
+  vitaminC: boolean;
   tummyTime: boolean;
   sterilization: boolean;
   bathing: boolean;

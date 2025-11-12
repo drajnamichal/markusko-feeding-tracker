@@ -26,6 +26,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       formulaMl: isFormula ? ml : 0,
       vomit: false,
       vitaminD: false,
+      vitaminC: false,
       tummyTime: false,
       sterilization: false,
       bathing: false,
@@ -56,6 +57,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       formulaMl: 0,
       vomit: false,
       vitaminD: false,
+      vitaminC: false,
       tummyTime: false,
       sterilization: false,
       bathing: false,
@@ -86,6 +88,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       formulaMl: 0,
       vomit: false,
       vitaminD: false,
+      vitaminC: false,
       tummyTime: false,
       sterilization: false,
       bathing: false,
@@ -215,6 +218,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
               formulaMl: 0,
               vomit: false,
               vitaminD: true,
+              vitaminC: false,
               tummyTime: false,
               sterilization: false,
               bathing: false,
@@ -231,6 +235,41 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
           className={getButtonClass('vitamin-d', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
           {getButtonContent('vitamin-d', 'fas fa-sun', 'Vitamín D')}
+        </button>
+
+        {/* Vitamin C */}
+        <button
+          onClick={async () => {
+            const buttonId = 'vitamin-c';
+            hapticLight();
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
+            const now = new Date();
+            const entry: Omit<LogEntry, 'id' | 'dateTime'> & { dateTime: string } = {
+              dateTime: now.toISOString(),
+              poop: false,
+              pee: false,
+              breastMilkMl: 0,
+              breastfed: false,
+              formulaMl: 0,
+              vomit: false,
+              vitaminD: false,
+              vitaminC: true,
+              tummyTime: false,
+              sterilization: false,
+              bathing: false,
+              sabSimplex: false,
+              notes: 'Rýchle pridanie: Vitamín C',
+            };
+            await onQuickAdd(entry);
+            setButtonStates(prev => ({ ...prev, [buttonId]: 'success' }));
+            setTimeout(() => {
+              setButtonStates(prev => ({ ...prev, [buttonId]: 'idle' }));
+            }, 1500);
+          }}
+          disabled={buttonStates['vitamin-c'] === 'loading' || buttonStates['vitamin-c'] === 'success'}
+          className={getButtonClass('vitamin-c', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
+        >
+          {getButtonContent('vitamin-c', 'fas fa-lemon', 'Vitamín C')}
         </button>
 
       </div>

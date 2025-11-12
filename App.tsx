@@ -49,6 +49,8 @@ function App() {
   const [daysSinceLastBathing, setDaysSinceLastBathing] = useState(0);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [daysSinceLastVitaminD, setDaysSinceLastVitaminD] = useState(0);
+  const [showVitaminCReminder, setShowVitaminCReminder] = useState(false);
+  const [daysSinceLastVitaminC, setDaysSinceLastVitaminC] = useState(0);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(() => {
     return localStorage.getItem('selectedProfileId');
@@ -398,6 +400,33 @@ function App() {
         // No Vitamin D recorded yet - show reminder
         setDaysSinceLastVitaminD(999);
         setShowVitaminDReminder(true);
+      }
+    }
+  }, [entries, loading]);
+
+  // Check for Vitamin C reminder (every day - every 1+ days)
+  useEffect(() => {
+    if (!loading) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      // Find last Vitamin C entry
+      const vitaminCEntries = entries
+        .filter(entry => entry.vitaminC)
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+
+      if (vitaminCEntries.length > 0) {
+        const lastVitaminC = vitaminCEntries[0].dateTime;
+        const lastVitaminCDay = new Date(lastVitaminC.getFullYear(), lastVitaminC.getMonth(), lastVitaminC.getDate());
+        const diffTime = today.getTime() - lastVitaminCDay.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        setDaysSinceLastVitaminC(diffDays);
+        setShowVitaminCReminder(diffDays >= 1); // Show reminder every day (1+ days)
+      } else {
+        // No Vitamin C recorded yet - show reminder
+        setDaysSinceLastVitaminC(999);
+        setShowVitaminCReminder(true);
       }
     }
   }, [entries, loading]);
@@ -808,6 +837,7 @@ function App() {
       formulaMl: 0,
       vomit: false,
       vitaminD: false,
+      vitaminC: false,
       tummyTime: true,
       sterilization: false,
       bathing: false,
@@ -1870,6 +1900,36 @@ function App() {
             <button
               onClick={() => setShowVitaminDReminder(false)}
               className="text-orange-500 hover:text-orange-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {showVitaminCReminder && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-lemon text-3xl text-yellow-500"></i>
+              <div>
+                <p className="font-bold text-yellow-800">💊 Pripomienka: Vitamín C</p>
+                <p className="text-sm text-yellow-700">
+                  {daysSinceLastVitaminC >= 999 
+                    ? 'Ešte ste nezaznamenali Vitamín C!' 
+                    : daysSinceLastVitaminC === 1
+                    ? 'Prešiel 1 deň od poslednej dávky. Čas na Vitamín C!'
+                    : `Prešlo ${daysSinceLastVitaminC} dni od poslednej dávky. Čas na Vitamín C!`
+                  }
+                </p>
+                <p className="text-xs text-yellow-600 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Dávkovanie: 8 kvapiek denne
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowVitaminCReminder(false)}
+              className="text-yellow-500 hover:text-yellow-700 transition-colors"
               aria-label="Zavrieť pripomienku"
             >
               <i className="fas fa-times text-xl"></i>
