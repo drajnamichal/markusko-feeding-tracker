@@ -1893,7 +1893,7 @@ function App() {
                 </p>
                 <p className="text-xs text-orange-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  Dávkovanie: Každý druhý deň (1x denne)
+                  Dávkovanie: 2 kvapky denne
                 </p>
               </div>
             </div>
