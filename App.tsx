@@ -1934,6 +1934,14 @@ function App() {
                   <i className="fas fa-clock mr-1"></i>
                   <strong>Kedy:</strong> Ráno po prvom kŕmení
                 </p>
+                <p className="text-xs text-orange-600">
+                  <i className="fas fa-utensils mr-1"></i>
+                  <strong>Ako podať:</strong> Na lyžičku s mliekom alebo priamo do úst
+                </p>
+                <p className="text-xs text-orange-600">
+                  <i className="fas fa-exclamation-triangle mr-1"></i>
+                  Nemiešať do fľaše (zostane prilepené na stene)
+                </p>
               </div>
             </div>
             <button
@@ -1966,6 +1974,14 @@ function App() {
                   <i className="fas fa-clock mr-1"></i>
                   <strong>Kedy:</strong> Dopoludnia (10:00-12:00) po kŕmení
                 </p>
+                <p className="text-xs text-yellow-600">
+                  <i className="fas fa-utensils mr-1"></i>
+                  <strong>Ako podať:</strong> Do lyžičky alebo do menšieho množstva mlieka
+                </p>
+                <p className="text-xs text-yellow-600">
+                  <i className="fas fa-exclamation-triangle mr-1"></i>
+                  Nie nalačno (môže podráždiť žalúdok)
+                </p>
               </div>
             </div>
             <button
@@ -1997,6 +2013,10 @@ function App() {
                 <p className="text-xs text-green-600">
                   <i className="fas fa-clock mr-1"></i>
                   <strong>Kedy:</strong> Večer, 30-60 min po poslednom kŕmení
+                </p>
+                <p className="text-xs text-green-600">
+                  <i className="fas fa-utensils mr-1"></i>
+                  <strong>Ako podať:</strong> S malým množstvom mlieka alebo jedla
                 </p>
                 <p className="text-xs text-green-600">
                   <i className="fas fa-exclamation-triangle mr-1"></i>
