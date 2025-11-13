@@ -1992,7 +1992,7 @@ function App() {
                 </p>
                 <p className="text-xs text-green-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  <strong>ProbioMaxík Baby (Dr. Max):</strong> 6 kvapiek denne
+                  <strong>ProbioMaxík Baby (Dr. Max):</strong> 9 kvapiek denne
                 </p>
                 <p className="text-xs text-green-600">
                   <i className="fas fa-clock mr-1"></i>
