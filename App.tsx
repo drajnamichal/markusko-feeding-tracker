@@ -1960,7 +1960,7 @@ function App() {
                 </p>
                 <p className="text-xs text-yellow-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  <strong>Vitamín C Baby (Dr. Max):</strong> 5 kvapiek denne
+                  <strong>Vitamín C Baby (Dr. Max):</strong> 8 kvapiek denne
                 </p>
                 <p className="text-xs text-yellow-600">
                   <i className="fas fa-clock mr-1"></i>
