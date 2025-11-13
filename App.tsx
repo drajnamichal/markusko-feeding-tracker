@@ -1928,7 +1928,7 @@ function App() {
                 </p>
                 <p className="text-xs text-orange-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  <strong>Vigantol:</strong> 1 kvapka denne
+                  <strong>Vigantol:</strong> 2 kvapky denne
                 </p>
                 <p className="text-xs text-orange-600">
                   <i className="fas fa-clock mr-1"></i>
