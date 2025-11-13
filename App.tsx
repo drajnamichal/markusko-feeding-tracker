@@ -1928,7 +1928,11 @@ function App() {
                 </p>
                 <p className="text-xs text-orange-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  Dávkovanie: 2 kvapky denne
+                  <strong>Vigantol:</strong> 1 kvapka denne
+                </p>
+                <p className="text-xs text-orange-600">
+                  <i className="fas fa-clock mr-1"></i>
+                  <strong>Kedy:</strong> Ráno po prvom kŕmení
                 </p>
               </div>
             </div>
@@ -1956,7 +1960,11 @@ function App() {
                 </p>
                 <p className="text-xs text-yellow-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  Dávkovanie: 8 kvapiek denne
+                  <strong>Vitamín C Baby (Dr. Max):</strong> 5 kvapiek denne
+                </p>
+                <p className="text-xs text-yellow-600">
+                  <i className="fas fa-clock mr-1"></i>
+                  <strong>Kedy:</strong> Dopoludnia (10:00-12:00) po kŕmení
                 </p>
               </div>
             </div>
@@ -1984,7 +1992,15 @@ function App() {
                 </p>
                 <p className="text-xs text-green-600 mt-1">
                   <i className="fas fa-info-circle mr-1"></i>
-                  Dávkovanie: 9 kvapiek denne s malým množstvom materského mlieka, detskej výživy alebo iného jedla
+                  <strong>ProbioMaxík Baby (Dr. Max):</strong> 6 kvapiek denne
+                </p>
+                <p className="text-xs text-green-600">
+                  <i className="fas fa-clock mr-1"></i>
+                  <strong>Kedy:</strong> Večer, 30-60 min po poslednom kŕmení
+                </p>
+                <p className="text-xs text-green-600">
+                  <i className="fas fa-exclamation-triangle mr-1"></i>
+                  Nepodávať s teplým mliekom (nad 37°C)
                 </p>
               </div>
             </div>
