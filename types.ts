@@ -15,6 +15,7 @@ export interface LogEntry {
   sterilization: boolean;
   bathing: boolean;
   sabSimplex: boolean;
+  maltofer: boolean;
   notes: string;
 }
 

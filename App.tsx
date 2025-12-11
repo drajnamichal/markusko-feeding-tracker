@@ -53,6 +53,9 @@ function App() {
   const [daysSinceLastVitaminC, setDaysSinceLastVitaminC] = useState(0);
   const [showProbioticReminder, setShowProbioticReminder] = useState(false);
   const [daysSinceLastProbiotic, setDaysSinceLastProbiotic] = useState(0);
+  const [showMaltoferReminder, setShowMaltoferReminder] = useState(false);
+  const [maltoferTodayCount, setMaltoferTodayCount] = useState(0);
+  const [maltoferRemainingDays, setMaltoferRemainingDays] = useState(0);
   const [babyProfile, setBabyProfile] = useState<BabyProfile | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(() => {
     return localStorage.getItem('selectedProfileId');
@@ -457,6 +460,53 @@ function App() {
         setDaysSinceLastProbiotic(999);
         setShowProbioticReminder(true);
       }
+    }
+  }, [entries, loading]);
+
+  // Check for Maltofer (iron) reminder - 2x5 drops daily for 4 weeks
+  useEffect(() => {
+    if (!loading) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      // Get or set the Maltofer start date (start date is Dec 11, 2025)
+      const MALTOFER_START_DATE_KEY = 'maltoferStartDate';
+      let startDateStr = localStorage.getItem(MALTOFER_START_DATE_KEY);
+      
+      if (!startDateStr) {
+        // Set start date to today (Dec 11, 2025)
+        startDateStr = today.toISOString().split('T')[0];
+        localStorage.setItem(MALTOFER_START_DATE_KEY, startDateStr);
+      }
+      
+      const startDate = new Date(startDateStr);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 28); // 4 weeks = 28 days
+      
+      // Calculate remaining days
+      const remainingMs = endDate.getTime() - today.getTime();
+      const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+      setMaltoferRemainingDays(Math.max(0, remainingDays));
+      
+      // If treatment period is over, don't show reminder
+      if (remainingDays <= 0) {
+        setShowMaltoferReminder(false);
+        setMaltoferTodayCount(0);
+        return;
+      }
+      
+      // Count today's Maltofer entries
+      const todayMaltoferEntries = entries.filter(entry => {
+        const entryDate = new Date(entry.dateTime);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime() && entry.maltofer;
+      });
+      
+      const todayCount = todayMaltoferEntries.length;
+      setMaltoferTodayCount(todayCount);
+      
+      // Show reminder if less than 2 doses given today
+      setShowMaltoferReminder(todayCount < 2);
     }
   }, [entries, loading]);
 
@@ -872,6 +922,7 @@ function App() {
       sterilization: false,
       bathing: false,
       sabSimplex: false,
+      maltofer: false,
       notes: `Tummy Time: ${Math.floor(seconds / 60)} min ${seconds % 60} sek`,
     };
 
@@ -2027,6 +2078,44 @@ function App() {
             <button
               onClick={() => setShowProbioticReminder(false)}
               className="text-green-500 hover:text-green-700 transition-colors"
+              aria-label="Zavrieť pripomienku"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        )}
+
+        {showMaltoferReminder && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-droplet text-3xl text-red-500"></i>
+              <div>
+                <p className="font-bold text-red-800">💊 Pripomienka: Maltofer (železo)</p>
+                <p className="text-sm text-red-700">
+                  {maltoferTodayCount === 0 
+                    ? 'Dnes ešte nepodané - potrebné 2x denne' 
+                    : maltoferTodayCount === 1
+                    ? '✓ Podané 1x - zostáva podať ešte 1x dnes'
+                    : ''
+                  }
+                </p>
+                <p className="text-xs text-red-600 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  <strong>Dávkovanie:</strong> 2× denne po 5 kvapiek
+                </p>
+                <p className="text-xs text-red-600">
+                  <i className="fas fa-calendar-alt mr-1"></i>
+                  <strong>Zostáva:</strong> {maltoferRemainingDays} {maltoferRemainingDays === 1 ? 'deň' : maltoferRemainingDays < 5 ? 'dni' : 'dní'} z 4-týždňovej kúry
+                </p>
+                <p className="text-xs text-red-600">
+                  <i className="fas fa-clock mr-1"></i>
+                  <strong>Kedy:</strong> Ráno a večer, medzi kŕmeniami
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowMaltoferReminder(false)}
+              className="text-red-500 hover:text-red-700 transition-colors"
               aria-label="Zavrieť pripomienku"
             >
               <i className="fas fa-times text-xl"></i>
