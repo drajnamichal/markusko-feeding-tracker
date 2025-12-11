@@ -1,4 +1,4 @@
-const CACHE_NAME = 'markusik-tracker-v30-maltofer';
+const CACHE_NAME = 'markusik-tracker-v31-maltofer-display';
 const urlsToCache = [
   '/',
   '/index.html',

@@ -131,6 +131,7 @@ const LogList: React.FC<LogListProps> = ({ entries, onDeleteEntry, onEditEntry }
                                                         <ActivityIcon icon="fa-baby" label="Tummy Time" color="text-indigo-500" enabled={entry.tummyTime} />
                                                         <ActivityIcon icon="fa-flask" label="Sterilizácia" color="text-cyan-500" enabled={entry.sterilization} />
                                                         <ActivityIcon icon="fa-bath" label="Kúpanie" color="text-blue-500" enabled={entry.bathing} />
+                                                        <ActivityIcon icon="fa-droplet" label="Maltofer" color="text-red-500" enabled={entry.maltofer} />
                                                     </div>
                                                     {entry.notes && (
                                                         <p className="text-slate-600 text-sm mt-3 bg-white p-2 rounded-md">
