@@ -1,4 +1,4 @@
-const CACHE_NAME = 'markusik-tracker-v31-maltofer-display';
+const CACHE_NAME = 'markusik-tracker-v32-remove-probiotic';
 const urlsToCache = [
   '/',
   '/index.html',
