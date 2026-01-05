@@ -32,7 +32,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
   const [bathing, setBathing] = useState(false);
   const [maltofer, setMaltofer] = useState(false);
   const [breastMilkMl, setBreastMilkMl] = useState('');
-  const [formulaMl, setFormulaMl] = useState('166');
+  const [formulaMl, setFormulaMl] = useState('');
   const [notes, setNotes] = useState('');
   const [saveButtonState, setSaveButtonState] = useState<ButtonState>('idle');
 
@@ -159,7 +159,7 @@ const EntryForm: React.FC<EntryFormProps> = ({ onAddEntry, editingEntry, onUpdat
     setBathing(false);
     setMaltofer(false);
     setBreastMilkMl('');
-    setFormulaMl('166');
+    setFormulaMl('');
     setNotes('');
     setDateTime(getCurrentDateTimeString());
   };
