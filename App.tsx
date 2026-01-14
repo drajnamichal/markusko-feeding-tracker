@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit } from './types';
 import EntryForm from './components/EntryForm';
+import QuickAddButtons from './components/QuickAddButtons';
 import LogList from './components/LogList';
 import Statistics from './components/Statistics';
 import WhiteNoise from './components/WhiteNoise';
@@ -435,25 +436,22 @@ function App() {
   }, [entries, loading]);
 
 
-  // Check for Maltofer (iron) reminder - 2x5 drops daily for 4 weeks
+  // Check for Maltofer (iron) reminder - 2x5 drops daily for 6 weeks
   useEffect(() => {
     if (!loading) {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
-      // Get or set the Maltofer start date (start date is Dec 11, 2025)
+      // Get or set the Maltofer start date (original start date is Dec 11, 2025)
       const MALTOFER_START_DATE_KEY = 'maltoferStartDate';
-      let startDateStr = localStorage.getItem(MALTOFER_START_DATE_KEY);
       
-      if (!startDateStr) {
-        // Set start date to today (Dec 11, 2025)
-        startDateStr = today.toISOString().split('T')[0];
-        localStorage.setItem(MALTOFER_START_DATE_KEY, startDateStr);
-      }
+      // Force the original start date (Dec 11, 2025) to ensure it shows up with the correct counting
+      let startDateStr = '2025-12-11';
+      localStorage.setItem(MALTOFER_START_DATE_KEY, startDateStr);
       
       const startDate = new Date(startDateStr);
       const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 28); // 4 weeks = 28 days
+      endDate.setDate(endDate.getDate() + 42); // 6 weeks = 42 days
       
       // Calculate remaining days
       const remainingMs = endDate.getTime() - today.getTime();
@@ -1767,11 +1765,31 @@ function App() {
               {editingMeasurement && (
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     if (editingMeasurement) {
-                      deleteMeasurement(editingMeasurement.id);
+                      const idToDelete = editingMeasurement.id;
                       setShowMeasurementModal(false);
                       setEditingMeasurement(null);
+                      
+                      // Now delete after closing modal
+                      if (confirm('Naozaj chcete vymazať toto meranie?')) {
+                        try {
+                          const { error } = await supabase
+                            .from('measurements')
+                            .delete()
+                            .eq('id', idToDelete);
+
+                          if (error) throw error;
+
+                          setMeasurements(prev => prev.filter(m => m.id !== idToDelete));
+                          hapticMedium();
+                          toast.success('Meranie vymazané');
+                        } catch (error) {
+                          console.error('Error deleting measurement:', error);
+                          hapticError();
+                          toast.error('Chyba pri mazaní merania');
+                        }
+                      }
                     }
                   }}
                   className="w-full mt-3 bg-red-50 text-red-600 py-3 rounded-lg font-semibold hover:bg-red-100 transition-colors border border-red-200"
@@ -2037,7 +2055,7 @@ function App() {
                 </p>
                 <p className="text-xs text-red-600">
                   <i className="fas fa-calendar-alt mr-1"></i>
-                  <strong>Zostáva:</strong> {maltoferRemainingDays} {maltoferRemainingDays === 1 ? 'deň' : maltoferRemainingDays < 5 ? 'dni' : 'dní'} z 4-týždňovej kúry
+                  <strong>Zostáva:</strong> {maltoferRemainingDays} {maltoferRemainingDays === 1 ? 'deň' : maltoferRemainingDays < 5 ? 'dni' : 'dní'} z 6-týždňovej kúry
                 </p>
                 <p className="text-xs text-red-600">
                   <i className="fas fa-clock mr-1"></i>
@@ -2167,7 +2185,8 @@ function App() {
       {!showDoctorVisits && !showSleepTracker && (
         <main className={`container mx-auto p-4 md:p-8 ${isHomeScreen ? 'grid grid-cols-1 lg:grid-cols-3 gap-8' : 'max-w-6xl'}`}>
           {isHomeScreen && (
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-4">
+              <QuickAddButtons onQuickAdd={addEntry} />
               <EntryForm 
                 onAddEntry={addEntry} 
                 editingEntry={editingEntry}
