@@ -148,6 +148,23 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
           {getButtonContent('maltofer', 'fas fa-droplet', 'Maltofer')}
         </button>
 
+        {/* Care Buttons */}
+        <button
+          onClick={() => handleQuickAdd('bathing', { bathing: true }, 'Kúpanie')}
+          disabled={buttonStates['bathing'] === 'loading' || buttonStates['bathing'] === 'success'}
+          className={getButtonClass('bathing', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
+        >
+          {getButtonContent('bathing', 'fas fa-bath', 'Kúpanie')}
+        </button>
+
+        <button
+          onClick={() => handleQuickAdd('sterilization', { sterilization: true }, 'Sterilizácia')}
+          disabled={buttonStates['sterilization'] === 'loading' || buttonStates['sterilization'] === 'success'}
+          className={getButtonClass('sterilization', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
+        >
+          {getButtonContent('sterilization', 'fas fa-flask', 'Sterilizácia')}
+        </button>
+
       </div>
 
       <p className="text-white/60 text-xs mt-3 text-center">
