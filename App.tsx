@@ -50,8 +50,6 @@ function App() {
   const [daysSinceLastBathing, setDaysSinceLastBathing] = useState(0);
   const [showVitaminDReminder, setShowVitaminDReminder] = useState(false);
   const [daysSinceLastVitaminD, setDaysSinceLastVitaminD] = useState(0);
-  const [showVitaminCReminder, setShowVitaminCReminder] = useState(false);
-  const [daysSinceLastVitaminC, setDaysSinceLastVitaminC] = useState(0);
   const [showMaltoferReminder, setShowMaltoferReminder] = useState(false);
   const [maltoferTodayCount, setMaltoferTodayCount] = useState(0);
   const [maltoferRemainingDays, setMaltoferRemainingDays] = useState(0);
@@ -407,34 +405,6 @@ function App() {
       }
     }
   }, [entries, loading]);
-
-  // Check for Vitamin C reminder (every day - every 1+ days)
-  useEffect(() => {
-    if (!loading) {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
-      // Find last Vitamin C entry
-      const vitaminCEntries = entries
-        .filter(entry => entry.vitaminC)
-        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
-
-      if (vitaminCEntries.length > 0) {
-        const lastVitaminC = vitaminCEntries[0].dateTime;
-        const lastVitaminCDay = new Date(lastVitaminC.getFullYear(), lastVitaminC.getMonth(), lastVitaminC.getDate());
-        const diffTime = today.getTime() - lastVitaminCDay.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        setDaysSinceLastVitaminC(diffDays);
-        setShowVitaminCReminder(diffDays >= 1); // Show reminder every day (1+ days)
-      } else {
-        // No Vitamin C recorded yet - show reminder
-        setDaysSinceLastVitaminC(999);
-        setShowVitaminCReminder(true);
-      }
-    }
-  }, [entries, loading]);
-
 
   // Check for Maltofer (iron) reminder - 2x5 drops daily for 6 weeks
   useEffect(() => {
@@ -1988,46 +1958,6 @@ function App() {
             <button
               onClick={() => setShowVitaminDReminder(false)}
               className="text-orange-500 hover:text-orange-700 transition-colors"
-              aria-label="Zavrieť pripomienku"
-            >
-              <i className="fas fa-times text-xl"></i>
-            </button>
-          </div>
-        )}
-
-        {showVitaminCReminder && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg shadow-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-lemon text-3xl text-yellow-500"></i>
-              <div>
-                <p className="font-bold text-yellow-800">💊 Pripomienka: Vitamín C</p>
-                <p className="text-sm text-yellow-700">
-                  {daysSinceLastVitaminC >= 999 
-                    ? '' 
-                    : `Prešlo ${daysSinceLastVitaminC} ${daysSinceLastVitaminC === 1 ? 'deň' : 'dni'} od poslednej dávky`
-                  }
-                </p>
-                <p className="text-xs text-yellow-600 mt-1">
-                  <i className="fas fa-info-circle mr-1"></i>
-                  <strong>Vitamín C Baby (Dr. Max):</strong> 8 kvapiek denne
-                </p>
-                <p className="text-xs text-yellow-600">
-                  <i className="fas fa-clock mr-1"></i>
-                  <strong>Kedy:</strong> Dopoludnia (10:00-12:00) po kŕmení
-                </p>
-                <p className="text-xs text-yellow-600">
-                  <i className="fas fa-utensils mr-1"></i>
-                  <strong>Ako podať:</strong> Do lyžičky alebo do menšieho množstva mlieka
-                </p>
-                <p className="text-xs text-yellow-600">
-                  <i className="fas fa-exclamation-triangle mr-1"></i>
-                  Nie nalačno (môže podráždiť žalúdok)
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowVitaminCReminder(false)}
-              className="text-yellow-500 hover:text-yellow-700 transition-colors"
               aria-label="Zavrieť pripomienku"
             >
               <i className="fas fa-times text-xl"></i>
