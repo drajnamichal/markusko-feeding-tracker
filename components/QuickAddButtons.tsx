@@ -97,29 +97,13 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       </div>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-        {/* Feeding Buttons */}
+        {/* Feeding Button */}
         <button
-          onClick={() => handleQuickAdd('feeding-breast-90', { breastMilkMl: 90 }, 'Materské mlieko 90ml')}
-          disabled={buttonStates['feeding-breast-90'] === 'loading' || buttonStates['feeding-breast-90'] === 'success'}
-          className={getButtonClass('feeding-breast-90', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
+          onClick={() => handleQuickAdd('feeding-formula-166', { formulaMl: 166 }, 'Umelé mlieko 166ml')}
+          disabled={buttonStates['feeding-formula-166'] === 'loading' || buttonStates['feeding-formula-166'] === 'success'}
+          className={getButtonClass('feeding-formula-166', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          {getButtonContent('feeding-breast-90', 'fas fa-bottle-droplet', 'Materské 90ml')}
-        </button>
-
-        <button
-          onClick={() => handleQuickAdd('feeding-formula-90', { formulaMl: 90 }, 'Umelé mlieko 90ml')}
-          disabled={buttonStates['feeding-formula-90'] === 'loading' || buttonStates['feeding-formula-90'] === 'success'}
-          className={getButtonClass('feeding-formula-90', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
-        >
-          {getButtonContent('feeding-formula-90', 'fas fa-prescription-bottle', 'Umelé 90ml')}
-        </button>
-
-        <button
-          onClick={() => handleQuickAdd('breastfeeding', { breastfed: true }, 'Dojčenie')}
-          disabled={buttonStates['breastfeeding'] === 'loading' || buttonStates['breastfeeding'] === 'success'}
-          className={getButtonClass('breastfeeding', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
-        >
-          {getButtonContent('breastfeeding', 'fas fa-heart', 'Dojčenie')}
+          {getButtonContent('feeding-formula-166', 'fas fa-prescription-bottle', 'Umelé 166ml')}
         </button>
 
         {/* Diaper Buttons */}
@@ -157,27 +141,11 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         </button>
 
         <button
-          onClick={() => handleQuickAdd('vitamin-c', { vitaminC: true }, 'Vitamín C')}
-          disabled={buttonStates['vitamin-c'] === 'loading' || buttonStates['vitamin-c'] === 'success'}
-          className={getButtonClass('vitamin-c', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
-        >
-          {getButtonContent('vitamin-c', 'fas fa-lemon', 'Vitamín C')}
-        </button>
-
-        <button
           onClick={() => handleQuickAdd('maltofer', { maltofer: true }, 'Maltofer (železo)')}
           disabled={buttonStates['maltofer'] === 'loading' || buttonStates['maltofer'] === 'success'}
           className={getButtonClass('maltofer', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
           {getButtonContent('maltofer', 'fas fa-droplet', 'Maltofer')}
-        </button>
-
-        <button
-          onClick={() => handleQuickAdd('probiotic', { probiotic: true }, 'Probiotiká')}
-          disabled={buttonStates['probiotic'] === 'loading' || buttonStates['probiotic'] === 'success'}
-          className={getButtonClass('probiotic', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
-        >
-          {getButtonContent('probiotic', 'fas fa-bacterium', 'Probiotiká')}
         </button>
 
       </div>
