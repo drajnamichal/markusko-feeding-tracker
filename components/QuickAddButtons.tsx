@@ -29,7 +29,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
     notes: '',
   });
 
-  const handleQuickAdd = async (buttonId: string, entryData: Partial<Omit<LogEntry, 'id' | 'dateTime' | 'babyProfileId'>>, notePrefix: string) => {
+  const handleQuickAdd = async (buttonId: string, entryData: Partial<Omit<LogEntry, 'id' | 'dateTime' | 'babyProfileId'>>) => {
     hapticLight();
     setButtonStates(prev => ({ ...prev, [buttonId]: 'loading' }));
     
@@ -38,7 +38,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       ...createBaseEntry(now),
       ...entryData,
       dateTime: now.toISOString(),
-      notes: `Rýchle pridanie: ${notePrefix}`,
+      notes: '',
     };
     
     await onQuickAdd(entry);
@@ -99,7 +99,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {/* Feeding Button */}
         <button
-          onClick={() => handleQuickAdd('feeding-formula-166', { formulaMl: 166 }, 'Umelé mlieko 166ml')}
+          onClick={() => handleQuickAdd('feeding-formula-166', { formulaMl: 166 })}
           disabled={buttonStates['feeding-formula-166'] === 'loading' || buttonStates['feeding-formula-166'] === 'success'}
           className={getButtonClass('feeding-formula-166', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -108,7 +108,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
 
         {/* Diaper Buttons */}
         <button
-          onClick={() => handleQuickAdd('diaper-pee', { pee: true }, 'Moč')}
+          onClick={() => handleQuickAdd('diaper-pee', { pee: true })}
           disabled={buttonStates['diaper-pee'] === 'loading' || buttonStates['diaper-pee'] === 'success'}
           className={getButtonClass('diaper-pee', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -116,7 +116,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         </button>
 
         <button
-          onClick={() => handleQuickAdd('diaper-poop', { poop: true }, 'Stolica')}
+          onClick={() => handleQuickAdd('diaper-poop', { poop: true })}
           disabled={buttonStates['diaper-poop'] === 'loading' || buttonStates['diaper-poop'] === 'success'}
           className={getButtonClass('diaper-poop', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -124,7 +124,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         </button>
 
         <button
-          onClick={() => handleQuickAdd('diaper-both', { pee: true, poop: true }, 'Moč + Stolica')}
+          onClick={() => handleQuickAdd('diaper-both', { pee: true, poop: true })}
           disabled={buttonStates['diaper-both'] === 'loading' || buttonStates['diaper-both'] === 'success'}
           className={getButtonClass('diaper-both', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -133,7 +133,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
 
         {/* Medication Buttons */}
         <button
-          onClick={() => handleQuickAdd('vitamin-d', { vitaminD: true }, 'Vitamín D')}
+          onClick={() => handleQuickAdd('vitamin-d', { vitaminD: true })}
           disabled={buttonStates['vitamin-d'] === 'loading' || buttonStates['vitamin-d'] === 'success'}
           className={getButtonClass('vitamin-d', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -141,7 +141,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         </button>
 
         <button
-          onClick={() => handleQuickAdd('maltofer', { maltofer: true }, 'Maltofer (železo)')}
+          onClick={() => handleQuickAdd('maltofer', { maltofer: true })}
           disabled={buttonStates['maltofer'] === 'loading' || buttonStates['maltofer'] === 'success'}
           className={getButtonClass('maltofer', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -150,7 +150,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
 
         {/* Care Buttons */}
         <button
-          onClick={() => handleQuickAdd('bathing', { bathing: true }, 'Kúpanie')}
+          onClick={() => handleQuickAdd('bathing', { bathing: true })}
           disabled={buttonStates['bathing'] === 'loading' || buttonStates['bathing'] === 'success'}
           className={getButtonClass('bathing', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
@@ -158,7 +158,7 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
         </button>
 
         <button
-          onClick={() => handleQuickAdd('sterilization', { sterilization: true }, 'Sterilizácia')}
+          onClick={() => handleQuickAdd('sterilization', { sterilization: true })}
           disabled={buttonStates['sterilization'] === 'loading' || buttonStates['sterilization'] === 'success'}
           className={getButtonClass('sterilization', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
