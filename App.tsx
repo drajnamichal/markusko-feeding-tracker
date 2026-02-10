@@ -406,34 +406,18 @@ function App() {
     }
   }, [entries, loading]);
 
-  // Check for Maltofer (iron) reminder - 2x5 drops daily for 6 weeks
+  // Check for Maltofer (iron) reminder - 2x5 drops daily
   useEffect(() => {
     if (!loading) {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
-      // Get or set the Maltofer start date (original start date is Dec 11, 2025)
-      const MALTOFER_START_DATE_KEY = 'maltoferStartDate';
-      
-      // Force the original start date (Dec 11, 2025) to ensure it shows up with the correct counting
-      let startDateStr = '2025-12-11';
-      localStorage.setItem(MALTOFER_START_DATE_KEY, startDateStr);
-      
-      const startDate = new Date(startDateStr);
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 42); // 6 weeks = 42 days
-      
-      // Calculate remaining days
-      const remainingMs = endDate.getTime() - today.getTime();
-      const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
-      setMaltoferRemainingDays(Math.max(0, remainingDays));
-      
-      // If treatment period is over, don't show reminder
-      if (remainingDays <= 0) {
-        setShowMaltoferReminder(false);
-        setMaltoferTodayCount(0);
-        return;
-      }
+      // Count total days of Maltofer treatment (started Dec 11, 2025)
+      const startDate = new Date('2025-12-11');
+      const totalDaysElapsed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const totalDaysOfTreatment = 42; // 6 weeks
+      const remainingDays = Math.max(0, totalDaysOfTreatment - totalDaysElapsed);
+      setMaltoferRemainingDays(remainingDays);
       
       // Count today's Maltofer entries
       const todayMaltoferEntries = entries.filter(entry => {
@@ -445,7 +429,7 @@ function App() {
       const todayCount = todayMaltoferEntries.length;
       setMaltoferTodayCount(todayCount);
       
-      // Show reminder if less than 2 doses given today
+      // Always show reminder if less than 2 doses given today (don't auto-hide based on date)
       setShowMaltoferReminder(todayCount < 2);
     }
   }, [entries, loading]);
@@ -1985,7 +1969,10 @@ function App() {
                 </p>
                 <p className="text-xs text-red-600">
                   <i className="fas fa-calendar-alt mr-1"></i>
-                  <strong>Zostáva:</strong> {maltoferRemainingDays} {maltoferRemainingDays === 1 ? 'deň' : maltoferRemainingDays < 5 ? 'dni' : 'dní'} z 6-týždňovej kúry
+                  {maltoferRemainingDays > 0 
+                    ? <><strong>Zostáva:</strong> {maltoferRemainingDays} {maltoferRemainingDays === 1 ? 'deň' : maltoferRemainingDays < 5 ? 'dni' : 'dní'} z 6-týždňovej kúry</>
+                    : <><strong>Kúra:</strong> 6-týždňová kúra skončila, pokračujte podľa pokynov lekára</>
+                  }
                 </p>
                 <p className="text-xs text-red-600">
                   <i className="fas fa-clock mr-1"></i>
