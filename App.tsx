@@ -2006,14 +2006,6 @@ function App() {
                   <i className="fas fa-clock mr-1"></i>
                   <strong>Kedy:</strong> Dopoludnia po kŕmení (10:00 – 12:00)
                 </p>
-                <p className="text-xs text-yellow-600">
-                  <i className="fas fa-utensils mr-1"></i>
-                  <strong>Ako podať:</strong> Na lyžičku alebo do menšieho množstva mlieka
-                </p>
-                <p className="text-xs text-yellow-600">
-                  <i className="fas fa-exclamation-triangle mr-1"></i>
-                  Nie nalačno (môže podráždiť žalúdok)
-                </p>
               </div>
             </div>
             <button
