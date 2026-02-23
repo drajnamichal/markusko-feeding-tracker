@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit } from './types';
+import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit, SolidFoodEntry } from './types';
 import EntryForm from './components/EntryForm';
 import QuickAddButtons from './components/QuickAddButtons';
 import LogList from './components/LogList';
@@ -16,6 +16,7 @@ import AIDoctor from './components/AIDoctor';
 import WelcomeSetup from './components/WelcomeSetup';
 import ProfileSelector from './components/ProfileSelector';
 import DoctorVisits from './components/DoctorVisits';
+import Prikrmy from './components/Prikrmy';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
@@ -27,7 +28,7 @@ import {
   getTummyTimeProgressColor,
   getTummyTimeMessage
 } from './utils/tummyTimeHelpers';
-import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, doctorVisitToDB, dbToDoctorVisit, type BabyProfileDB, type MeasurementDB, type SleepSessionDB, type DoctorVisitDB } from './supabaseClient';
+import { supabase, logEntryToDB, dbToLogEntry, babyProfileToDB, dbToBabyProfile, measurementToDB, dbToMeasurement, sleepSessionToDB, dbToSleepSession, doctorVisitToDB, dbToDoctorVisit, solidFoodEntryToDB, dbToSolidFoodEntry, type BabyProfileDB, type MeasurementDB, type SleepSessionDB, type DoctorVisitDB } from './supabaseClient';
 
 function App() {
   const toast = useToast();
@@ -77,6 +78,8 @@ function App() {
   const [showSleepTracker, setShowSleepTracker] = useState(false);
   const [doctorVisits, setDoctorVisits] = useState<DoctorVisit[]>([]);
   const [showDoctorVisits, setShowDoctorVisits] = useState(false);
+  const [solidFoodEntries, setSolidFoodEntries] = useState<SolidFoodEntry[]>([]);
+  const [showPrikrmy, setShowPrikrmy] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [feedingNotificationsEnabled, setFeedingNotificationsEnabled] = useState(() => {
     return localStorage.getItem('feedingNotificationsEnabled') === 'true';
@@ -209,6 +212,7 @@ function App() {
         loadMeasurements(selectedProfileId);
         loadSleepSessions(selectedProfileId);
         loadDoctorVisits(selectedProfileId);
+        loadSolidFoodEntries(selectedProfileId);
       }
     }
   }, [babyProfile, selectedProfileId]);
@@ -1055,6 +1059,100 @@ function App() {
     }
   };
 
+  const loadSolidFoodEntries = async (profileId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('solid_food_entries')
+        .select('*')
+        .eq('baby_profile_id', profileId)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setSolidFoodEntries(data ? data.map(dbToSolidFoodEntry) : []);
+    } catch (error) {
+      console.error('Error loading solid food entries:', error);
+    }
+  };
+
+  const addSolidFoodEntry = async (entryData: Omit<SolidFoodEntry, 'id' | 'babyProfileId' | 'createdAt' | 'updatedAt'>) => {
+    if (!selectedProfileId) {
+      toast.error('Vyberte profil bábätka');
+      return;
+    }
+
+    const newEntry: SolidFoodEntry = {
+      ...entryData,
+      id: new Date().toISOString() + Math.random(),
+      babyProfileId: selectedProfileId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    try {
+      const dbEntry = solidFoodEntryToDB(newEntry);
+      const { data, error } = await supabase
+        .from('solid_food_entries')
+        .insert([dbEntry])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const inserted = dbToSolidFoodEntry(data);
+      setSolidFoodEntries(prev => [inserted, ...prev].sort((a, b) => b.date.getTime() - a.date.getTime()));
+      hapticSuccess();
+      toast.success('Príkrm pridaný');
+    } catch (error) {
+      console.error('Error adding solid food entry:', error);
+      hapticError();
+      toast.error('Chyba pri pridávaní príkrmu');
+      throw error;
+    }
+  };
+
+  const updateSolidFoodEntry = async (updatedEntry: SolidFoodEntry) => {
+    try {
+      const dbEntry = solidFoodEntryToDB(updatedEntry);
+      const { error } = await supabase
+        .from('solid_food_entries')
+        .update(dbEntry)
+        .eq('id', updatedEntry.id);
+
+      if (error) throw error;
+
+      setSolidFoodEntries(prev =>
+        prev.map(e => e.id === updatedEntry.id ? updatedEntry : e)
+          .sort((a, b) => b.date.getTime() - a.date.getTime())
+      );
+      hapticSuccess();
+      toast.success('Príkrm aktualizovaný');
+    } catch (error) {
+      console.error('Error updating solid food entry:', error);
+      hapticError();
+      toast.error('Chyba pri aktualizácii príkrmu');
+      throw error;
+    }
+  };
+
+  const deleteSolidFoodEntry = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('solid_food_entries')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSolidFoodEntries(prev => prev.filter(e => e.id !== id));
+      hapticMedium();
+      toast.success('Príkrm vymazaný');
+    } catch (error) {
+      console.error('Error deleting solid food entry:', error);
+      hapticError();
+      toast.error('Chyba pri mazaní príkrmu');
+    }
+  };
+
   const saveSleepSession = async (startTime: Date, endTime: Date, durationMinutes: number) => {
     if (!selectedProfileId) {
       toast.error('Vyberte profil bábätka');
@@ -1102,11 +1200,12 @@ function App() {
     setShowFormulaGuide(false);
     setShowSleepTracker(false);
     setShowDoctorVisits(false);
+    setShowPrikrmy(false);
     setShowMenu(false);
   };
 
   // Check if we're on home screen
-  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide && !showSleepTracker && !showDoctorVisits;
+  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide && !showSleepTracker && !showDoctorVisits && !showPrikrmy;
 
 
   if (loading) {
@@ -1282,6 +1381,18 @@ function App() {
                       >
                         <i className="fas fa-user-doctor text-lg text-purple-500"></i>
                         <span className="text-slate-700 font-medium">Návštevy lekárov</span>
+                      </button>
+
+                      {/* Príkrmy Button */}
+                      <button
+                        onClick={() => {
+                          setShowPrikrmy(true);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showPrikrmy ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-bowl-food text-lg ${showPrikrmy ? 'text-orange-500' : 'text-orange-400'}`}></i>
+                        <span className={`font-medium ${showPrikrmy ? 'text-orange-600' : 'text-slate-700'}`}>Príkrmy</span>
                       </button>
                       
                       <div className="border-t border-slate-100 my-1"></div>
@@ -1894,6 +2005,30 @@ function App() {
         </div>
       )}
 
+      {showPrikrmy && (
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-3 mb-6">
+            <button
+              onClick={() => setShowPrikrmy(false)}
+              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+            >
+              <i className="fas fa-arrow-left mr-2"></i>
+              Späť
+            </button>
+            <h1 className="text-2xl font-bold text-slate-700">
+              <i className="fas fa-bowl-food mr-2 text-orange-500"></i>
+              Príkrmy
+            </h1>
+          </div>
+          <Prikrmy
+            entries={solidFoodEntries}
+            onAddEntry={addSolidFoodEntry}
+            onUpdateEntry={updateSolidFoodEntry}
+            onDeleteEntry={deleteSolidFoodEntry}
+          />
+        </div>
+      )}
+
       {/* Reminders & Widgets - Only on Home Screen */}
       {isHomeScreen && (
         <div className="container mx-auto px-4 pt-4 space-y-3">
@@ -2165,7 +2300,7 @@ function App() {
       )}
 
       {/* Main content - hide when showing special pages like Doctor Visits or Sleep Tracker */}
-      {!showDoctorVisits && !showSleepTracker && (
+      {!showDoctorVisits && !showSleepTracker && !showPrikrmy && (
         <main className={`container mx-auto p-4 md:p-8 ${isHomeScreen ? 'grid grid-cols-1 lg:grid-cols-3 gap-8' : 'max-w-6xl'}`}>
           {isHomeScreen && (
             <div className="lg:col-span-1 space-y-4">

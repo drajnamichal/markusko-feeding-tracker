@@ -66,3 +66,18 @@ export interface DoctorVisit {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface SolidFoodEntry {
+  id: string;
+  babyProfileId: string;
+  date: Date;
+  foodName: string;
+  foodCategory: string;
+  amountG: number | null;
+  allergyReaction: boolean;
+  allergyDetails: string;
+  stoolNotes: string;
+  notes: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

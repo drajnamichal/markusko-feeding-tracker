@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit } from './types';
+import type { LogEntry, BabyProfile, Measurement, SleepSession, DoctorVisit, SolidFoodEntry } from './types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -222,5 +222,51 @@ export const dbToDoctorVisit = (dbVisit: DoctorVisitDB): DoctorVisit => ({
   completed: dbVisit.completed,
   createdAt: new Date(dbVisit.created_at),
   updatedAt: new Date(dbVisit.updated_at),
+});
+
+// Database types for SolidFoodEntry
+export interface SolidFoodEntryDB {
+  id: string;
+  baby_profile_id: string;
+  date: string;
+  food_name: string;
+  food_category: string;
+  amount_g: number | null;
+  allergy_reaction: boolean;
+  allergy_details: string;
+  stool_notes: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Convert SolidFoodEntry to database format
+export const solidFoodEntryToDB = (entry: SolidFoodEntry): Omit<SolidFoodEntryDB, 'created_at' | 'updated_at'> => ({
+  id: entry.id,
+  baby_profile_id: entry.babyProfileId,
+  date: entry.date.toISOString().split('T')[0],
+  food_name: entry.foodName,
+  food_category: entry.foodCategory,
+  amount_g: entry.amountG,
+  allergy_reaction: entry.allergyReaction,
+  allergy_details: entry.allergyDetails,
+  stool_notes: entry.stoolNotes,
+  notes: entry.notes,
+});
+
+// Convert database format to SolidFoodEntry
+export const dbToSolidFoodEntry = (db: SolidFoodEntryDB): SolidFoodEntry => ({
+  id: db.id,
+  babyProfileId: db.baby_profile_id,
+  date: new Date(db.date),
+  foodName: db.food_name,
+  foodCategory: db.food_category,
+  amountG: db.amount_g,
+  allergyReaction: db.allergy_reaction,
+  allergyDetails: db.allergy_details,
+  stoolNotes: db.stool_notes,
+  notes: db.notes,
+  createdAt: new Date(db.created_at),
+  updatedAt: new Date(db.updated_at),
 });
 
