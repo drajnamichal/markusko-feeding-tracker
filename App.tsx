@@ -1080,16 +1080,15 @@ function App() {
       return;
     }
 
-    const newEntry: SolidFoodEntry = {
-      ...entryData,
-      id: new Date().toISOString() + Math.random(),
-      babyProfileId: selectedProfileId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
     try {
-      const dbEntry = solidFoodEntryToDB(newEntry);
+      const dbEntry = solidFoodEntryToDB({
+        ...entryData,
+        id: '',
+        babyProfileId: selectedProfileId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
       const { data, error } = await supabase
         .from('solid_food_entries')
         .insert([dbEntry])

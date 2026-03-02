@@ -88,7 +88,7 @@ const Prikrmy: React.FC<PrikrmyProps> = ({ entries, onAddEntry, onUpdateEntry, o
     setSaveState('loading');
     try {
       const entryData = {
-        date: new Date(date),
+        date: new Date(date + 'T12:00:00'),
         foodName: foodName.trim(),
         foodCategory,
         amountG: amountG ? parseInt(amountG) : null,

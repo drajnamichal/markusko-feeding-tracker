@@ -241,10 +241,9 @@ export interface SolidFoodEntryDB {
 }
 
 // Convert SolidFoodEntry to database format
-export const solidFoodEntryToDB = (entry: SolidFoodEntry): Omit<SolidFoodEntryDB, 'created_at' | 'updated_at'> => ({
-  id: entry.id,
+export const solidFoodEntryToDB = (entry: SolidFoodEntry): Omit<SolidFoodEntryDB, 'id' | 'created_at' | 'updated_at'> => ({
   baby_profile_id: entry.babyProfileId,
-  date: entry.date.toISOString().split('T')[0],
+  date: `${entry.date.getFullYear()}-${String(entry.date.getMonth() + 1).padStart(2, '0')}-${String(entry.date.getDate()).padStart(2, '0')}`,
   food_name: entry.foodName,
   food_category: entry.foodCategory,
   amount_g: entry.amountG,
@@ -258,7 +257,7 @@ export const solidFoodEntryToDB = (entry: SolidFoodEntry): Omit<SolidFoodEntryDB
 export const dbToSolidFoodEntry = (db: SolidFoodEntryDB): SolidFoodEntry => ({
   id: db.id,
   babyProfileId: db.baby_profile_id,
-  date: new Date(db.date),
+  date: new Date(db.date + 'T12:00:00'),
   foodName: db.food_name,
   foodCategory: db.food_category,
   amountG: db.amount_g,
