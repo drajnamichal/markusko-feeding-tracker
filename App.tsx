@@ -17,6 +17,7 @@ import WelcomeSetup from './components/WelcomeSetup';
 import ProfileSelector from './components/ProfileSelector';
 import DoctorVisits from './components/DoctorVisits';
 import Prikrmy from './components/Prikrmy';
+import BabyProgressGuide from './components/BabyProgressGuide';
 import { useToast } from './components/Toast';
 import { AppLoadingSkeleton, ComponentLoadingSkeleton } from './components/SkeletonLoader';
 import { hapticSuccess, hapticError, hapticMedium, hapticLight } from './utils/haptic';
@@ -80,6 +81,7 @@ function App() {
   const [showDoctorVisits, setShowDoctorVisits] = useState(false);
   const [solidFoodEntries, setSolidFoodEntries] = useState<SolidFoodEntry[]>([]);
   const [showPrikrmy, setShowPrikrmy] = useState(false);
+  const [showProgressGuide, setShowProgressGuide] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [feedingNotificationsEnabled, setFeedingNotificationsEnabled] = useState(() => {
     return localStorage.getItem('feedingNotificationsEnabled') === 'true';
@@ -1200,11 +1202,12 @@ function App() {
     setShowSleepTracker(false);
     setShowDoctorVisits(false);
     setShowPrikrmy(false);
+    setShowProgressGuide(false);
     setShowMenu(false);
   };
 
   // Check if we're on home screen
-  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide && !showSleepTracker && !showDoctorVisits && !showPrikrmy;
+  const isHomeScreen = !showAIDoctor && !showStats && !showWhiteNoise && !showWHO && !showWHOPercentiles && !showDevelopment && !showFormulaGuide && !showSleepTracker && !showDoctorVisits && !showPrikrmy && !showProgressGuide;
 
 
   if (loading) {
@@ -1496,12 +1499,32 @@ function App() {
                           setShowWHOPercentiles(false);
                           setShowFormulaGuide(false);
                           setShowAIDoctor(false);
+                          setShowProgressGuide(false);
                           setShowMenu(false);
                         }}
                         className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showDevelopment ? 'bg-slate-50' : ''}`}
                       >
                         <i className={`fas fa-baby-carriage text-lg ${showDevelopment ? 'text-green-500' : 'text-slate-400'}`}></i>
                         <span className={`font-medium ${showDevelopment ? 'text-green-600' : 'text-slate-700'}`}>Cvičenia</span>
+                      </button>
+
+                      {/* Progress Guide Button */}
+                      <button
+                        onClick={() => {
+                          setShowProgressGuide(!showProgressGuide);
+                          setShowStats(false);
+                          setShowWhiteNoise(false);
+                          setShowWHO(false);
+                          setShowWHOPercentiles(false);
+                          setShowFormulaGuide(false);
+                          setShowAIDoctor(false);
+                          setShowDevelopment(false);
+                          setShowMenu(false);
+                        }}
+                        className={`w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-center gap-3 ${showProgressGuide ? 'bg-slate-50' : ''}`}
+                      >
+                        <i className={`fas fa-brain text-lg ${showProgressGuide ? 'text-cyan-500' : 'text-slate-400'}`}></i>
+                        <span className={`font-medium ${showProgressGuide ? 'text-cyan-600' : 'text-slate-700'}`}>Rozvoj dieťaťa</span>
                       </button>
                       
                       {/* White Noise Button */}
@@ -2326,6 +2349,8 @@ function App() {
               babyProfile ? <WHOPercentileCharts babyProfile={babyProfile} measurements={measurements} /> : <ComponentLoadingSkeleton type="percentiles" />
             ) : showDevelopment ? (
               babyProfile ? <DevelopmentGuide birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="development" />
+            ) : showProgressGuide ? (
+              <BabyProgressGuide />
             ) : showWHO ? (
               babyProfile ? <WHOGuidelines entries={entries} birthDate={babyProfile.birthDate} /> : <ComponentLoadingSkeleton type="who" />
             ) : showFormulaGuide ? (

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozvoj dieťaťa: Vedecký sprievodca prvým rokom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS reset and base styling */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; scroll-behavior: smooth; }
+        
+        /* Chart container constraint requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        /* Custom scrollbar for content areas */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .tab-active { border-bottom: 2px solid #0d9488; color: #0f766e; font-weight: 600; }
+        .card-hover:hover { transform: translateY(-2px); transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0d9488', // Teal 600
+                        secondary: '#f59e0b', // Amber 500
+                        background: '#f8fafc', // Slate 50
+                        surface: '#ffffff',
+                        textMain: '#334155', // Slate 700
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-textMain min-h-screen">
+
+<!-- Chosen Palette: Warm Neutrals with Teal and Amber accents. Represents calm, growth, and scientific clarity. -->
+<!-- Application Structure Plan: A single-page dashboard divided into logical sections: 1. Core Science (Why it matters), 2. Actionable Daily Practices (The "How-to"), 3. Interactive Age Timeline (Specifics for 5-12 months), 4. Recommended Tools/Toys. This structure moves the user from understanding the *why* to implementing the *what* and *how*, using tabs and dynamic content to avoid overwhelming them with text. -->
+<!-- Visualization & Content Choices: 
+     1. Chart.js Line Chart: Goal -> Show rapid brain development. Viz -> Line chart comparing synapse growth. Justification -> Visually reinforces the urgency and importance of early interaction (neuroplasticity).
+     2. Interactive Timeline Tabs: Goal -> Provide age-specific advice. Viz -> JS-driven content swapping. Justification -> Allows parents to focus on their child's current age (5+ months) without reading irrelevant future/past data.
+     3. CSS/HTML Grid Cards: Goal -> List toys and practices. Viz -> Structured cards with clear "Why it works". Justification -> Easy to scan, digestible chunks of actionable information.
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Navigation -->
+    <nav class="bg-surface shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <!-- CSS Icon instead of SVG -->
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">R</div>
+                        <span class="font-bold text-xl text-primary">Rozvoj Dieťaťa</span>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:space-x-8">
+                        <a href="#veda" class="text-slate-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Vedecké základy</a>
+                        <a href="#prax" class="text-slate-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Denná prax</a>
+                        <a href="#vek" class="text-slate-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Vývoj podľa veku</a>
+                        <a href="#hracky" class="text-slate-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Hračky a pomôcky</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="bg-primary text-white py-12 md:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-4">Ako vychovať zdravé a bystré dieťa</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto opacity-90">Sprievodca pre rodičov 5-mesačného syna. Založené na poznatkoch z neurovedy, vývinovej psychológie a odporúčaniach pediatrov pre optimálny sociálny a mentálny rozvoj v prvom roku.</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- Section 1: Veda -->
+        <section id="veda" class="scroll-mt-20">
+            <div class="mb-8 border-l-4 border-primary pl-4">
+                <h2 class="text-2xl font-bold text-slate-800">Prečo je prvý rok kritický: Pohľad vedy</h2>
+                <p class="text-slate-600 mt-2">Táto sekcia vysvetľuje biologické dôvody, prečo sú vaše každodenné interakcie s dieťaťom také dôležité. Pochopenie neuroplasticity je kľúčom k efektívnej výchove.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="space-y-4">
+                    <div class="bg-surface p-6 rounded-lg shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-primary mb-2">1. Neuroplasticita a synapsie</h3>
+                        <p class="text-sm">V prvom roku života sa mozog dieťaťa vyvíja rýchlejšie ako kedykoľvek inokedy. Každú sekundu vzniká v mozgu viac ako <strong>1 milión nových nervových spojení (synapsií)</strong>. Tieto spojenia sú formované skúsenosťami a interakciami s vami.</p>
+                    </div>
+                    <div class="bg-surface p-6 rounded-lg shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-primary mb-2">2. Koncept "Serve and Return" (Podnet a odozva)</h3>
+                        <p class="text-sm">Podľa Centra pre vývoj dieťaťa na Harvarde je toto najdôležitejší prvok. Dieťa vyšle "podnet" (bľabotanie, pohľad, plač, úsmev) a vy "vrátite" odozvu (očný kontakt, slovo, objatie). Toto buduje architektúru mozgu.</p>
+                    </div>
+                    <div class="bg-surface p-6 rounded-lg shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg text-primary mb-2">3. Bezpečná vzťahová väzba (Attachment)</h3>
+                        <p class="text-sm">Základom pre budúceho "dobrého človeka" (empatiu, odolnosť, sebavedomie) je to, že svet vníma ako bezpečné miesto. To dosiahnete tým, že <strong>citlivo a konzistentne reagujete na jeho potreby (vrátane plaču)</strong>. Dieťa do 1 roka sa nedá rozmaznať nosením alebo reakciou na plač.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-surface p-4 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-center font-bold mb-4">Rýchlosť tvorby mozgových spojení</h3>
+                    <div class="chart-container">
+                        <canvas id="brainChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-500 mt-2">Zdroj: Adaptované z Nelson, C.A. (2000). Senzorické dráhy a jazyk kulminujú v prvom roku.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Denná prax -->
+        <section id="prax" class="scroll-mt-20">
+            <div class="mb-8 border-l-4 border-secondary pl-4">
+                <h2 class="text-2xl font-bold text-slate-800">Najlepšie výchovné postupy: Čo robiť DENS</h2>
+                <p class="text-slate-600 mt-2">Praktické, vedecky podložené kroky, ktoré môžete začať implementovať okamžite pre rozvoj kognitívnych a sociálnych zručností vášho 5-mesačného syna.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-surface p-6 rounded-xl shadow-md border-t-4 border-primary card-hover">
+                    <div class="text-3xl mb-4 text-center">🗣️</div>
+                    <h3 class="font-bold text-lg mb-2 text-center">Jazyk a komunikácia</h3>
+                    <ul class="text-sm space-y-2 text-slate-700">
+                        <li><span class="font-bold text-primary">Parentese:</span> Hovorte s ním trochu vyšším, melodickým hlasom s predĺženými samohláskami. Mozog dojčiat je na to evolučne nastavený.</li>
+                        <li><span class="font-bold text-primary">Komentátor:</span> Opisujte všetko, čo robíte ("Teraz ti obliekam červené ponožky"). Budujete pasívnu slovnú zásobu.</li>
+                        <li><span class="font-bold text-primary">Pauza na odpoveď:</span> Keď na neho hovoríte, urobte pauzu. Nechajte mu čas (aj 5-10 sekúnd), aby vám "odpovedal" zamrmlaním alebo pohybom.</li>
+                    </ul>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-surface p-6 rounded-xl shadow-md border-t-4 border-secondary card-hover">
+                    <div class="text-3xl mb-4 text-center">🤸‍♂️</div>
+                    <h3 class="font-bold text-lg mb-2 text-center">Fyzický a kognitívny rozvoj</h3>
+                    <ul class="text-sm space-y-2 text-slate-700">
+                        <li><span class="font-bold text-secondary">Život na zemi:</span> Zem je najlepšie laboratórium. Minimalizujte čas v lehátkach a autosedačkách. Nechajte ho trénovať pretáčanie a hru na brušku.</li>
+                        <li><span class="font-bold text-secondary">Voľný pohyb:</span> Nepoužívajte pavúky/chodítka. Sú nebezpečné a narúšajú prirodzený motorický vývoj. Nechajte ho, nech na spôsoby pohybu (plazenie, lezenie) príde sám.</li>
+                        <li><span class="font-bold text-secondary">Čítanie:</span> Začnite čítať hneď. Nejde o dej, ale o spoločný čas, počúvanie jazyka a prezeranie obrázkov.</li>
+                    </ul>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-surface p-6 rounded-xl shadow-md border-t-4 border-slate-700 card-hover">
+                    <div class="text-3xl mb-4 text-center">❤️</div>
+                    <h3 class="font-bold text-lg mb-2 text-center">Sociálno-emocionálny rozvoj</h3>
+                    <ul class="text-sm space-y-2 text-slate-700">
+                        <li><span class="font-bold text-slate-700">Zrkadlenie emócií:</span> Keď sa usmeje, usmejte sa. Keď je frustrovaný, pomenujte to pokojným hlasom ("Vidím, že sa hneváš, lebo na to nedosiahneš").</li>
+                        <li><span class="font-bold text-slate-700">Očný kontakt:</span> Pri kŕmení (či už fľašou alebo prsníkom) a prebaľovaní odložte telefón. Sú to najlepšie príležitosti na očný kontakt a budovanie dôvery.</li>
+                        <li><span class="font-bold text-slate-700">Žiadne obrazovky:</span> Americká akadémia pediatrov (AAP) odporúča nula pasívneho času pred obrazovkou do 18-24 mesiacov (okrem videohovorov s rodinou). Rýchle strihy narúšajú vývoj pozornosti.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Vývoj podľa veku (Interactive) -->
+        <section id="vek" class="scroll-mt-20 bg-white rounded-xl shadow-sm p-6 border border-slate-200">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Cielený vývoj: Čo očakávať a ako reagovať</h2>
+                <p class="text-slate-600 mt-2">Vyberte vekové obdobie pre zobrazenie špecifických míľnikov a aktivít. Pamätajte, že každé dieťa sa vyvíja vlastným tempom, údaje sú orientačné.</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-slate-200 mb-6 overflow-x-auto">
+                <button onclick="changeAgeTab('month5')" id="tab-month5" class="px-4 py-2 font-medium text-sm text-slate-500 hover:text-slate-700 tab-active whitespace-nowrap focus:outline-none">5-6 Mesiacov (Teraz)</button>
+                <button onclick="changeAgeTab('month7')" id="tab-month7" class="px-4 py-2 font-medium text-sm text-slate-500 hover:text-slate-700 whitespace-nowrap focus:outline-none">7-9 Mesiacov</button>
+                <button onclick="changeAgeTab('month10')" id="tab-month10" class="px-4 py-2 font-medium text-sm text-slate-500 hover:text-slate-700 whitespace-nowrap focus:outline-none">10-12 Mesiacov</button>
+            </div>
+
+            <!-- Dynamic Content Area -->
+            <div id="age-content" class="min-h-[300px]">
+                <!-- Content will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Section 4: Hračky a pomôcky -->
+        <section id="hracky" class="scroll-mt-20">
+            <div class="mb-8 border-l-4 border-primary pl-4">
+                <h2 class="text-2xl font-bold text-slate-800">Odporúčané hračky a pomôcky</h2>
+                <p class="text-slate-600 mt-2">Pravidlo: <strong class="text-primary">Najlepšie hračky sú tie, ktoré robia najmenej.</strong> Hračka, ktorá bliká a hrá sama, stavia dieťa do roly pasívneho pozorovateľa. Pasívna hračka robí z dieťaťa aktívneho hráča.</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Item -->
+                <div class="bg-white p-4 rounded-lg shadow border border-slate-100 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl mb-3 shadow-inner">🪞</div>
+                    <h4 class="font-bold text-slate-800">Nerozbitné zrkadlo</h4>
+                    <p class="text-xs text-slate-600 mt-2">Ideálne pre 5-mesačné dieťa. Podporuje hru na brušku, sociálny vývoj (usmieva sa na "iného" jedinca) a neskôr sebauvedomenie.</p>
+                </div>
+                <!-- Item -->
+                <div class="bg-white p-4 rounded-lg shadow border border-slate-100 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl mb-3 shadow-inner">📚</div>
+                    <h4 class="font-bold text-slate-800">Knihy a leporelá</h4>
+                    <p class="text-xs text-slate-600 mt-2">Kontrastné čiernobiele knihy (teraz), neskôr pevné leporelá s 1 reálnou fotkou na stranu. Rozvíja zrak, sluch a učí koncept, že 2D obrázok reprezentuje 3D vec.</p>
+                </div>
+                <!-- Item -->
+                <div class="bg-white p-4 rounded-lg shadow border border-slate-100 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl mb-3 shadow-inner">🧱</div>
+                    <h4 class="font-bold text-slate-800">Drevené kocky a poháriky</h4>
+                    <p class="text-xs text-slate-600 mt-2">Najlepší nástroj na učenie príčiny a následku (zbúranie veže), úchopu a priestorového vnímania. Poháriky na vkladanie do seba (od cca 8 mesiacov).</p>
+                </div>
+                <!-- Item -->
+                <div class="bg-white p-4 rounded-lg shadow border border-slate-100 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl mb-3 shadow-inner">🥄</div>
+                    <h4 class="font-bold text-slate-800">Domáce potreby</h4>
+                    <p class="text-xs text-slate-600 mt-2">Drevená varecha, plastová miska, šatka. Skúmanie materiálov, zvukov a textúr zo skutočného sveta je pre mozog stimulujúcejšie ako plast.</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r text-sm">
+                <p class="font-bold text-red-700">Čomu sa určite vyhnúť:</p>
+                <p class="text-red-900 mt-1">1. <strong>Chodítka/Pavúky:</strong> Nútia dieťa do neprirodzenej polohy, preťažujú chrbticu, učia zlý stereotyp chôdze po špičkách a sú hlavnou príčinou úrazov dojčiat. <br> 2. <strong>Tablety/Telefóny ako "zabávače":</strong> Mozog v tomto veku nedokáže preložiť 2D obraz na obrazovke do reálneho sveta. Rozvíja to iba závislosť na dopamínových stimuloch.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 py-8 text-center text-sm mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Vytvorené pre informované a vedomé rodičovstvo.</p>
+            <p class="mt-2 text-slate-500">Poznámka: Tieto informácie nenahrádzajú odbornú lekársku starostlivosť. Ak máte obavy o vývoj vášho dieťaťa, vždy sa poraďte so svojím pediatrom.</p>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        // Data for Interactive Age Timeline
+        const ageData = {
+            month5: {
+                title: "5 - 6 Mesiacov: Objavovanie rúk a hlasu",
+                milestones: [
+                    "Pretáča sa z bruška na chrbát (a naopak).",
+                    "Začína sedieť s oporou.",
+                    "Všetko dáva do úst (hlavný spôsob spoznávania sveta).",
+                    "Vokalizuje, džavoce (ba-ba, ma-ma bez významu)."
+                ],
+                action: [
+                    "<strong>Tréning:</strong> Umiestňujte hračky tesne mimo jeho dosahu na zemi, aby ste ho motivovali k pohybu a naťahovaniu sa.",
+                    "<strong>Strava:</strong> Začnite zavádzať prvé príkrmy (zelenina) podľa odporúčaní pediatra. Umožnite mu chytať jedlo rukami (zmyslový rozvoj).",
+                    "<strong>Komunikácia:</strong> Hrajte sa hru 'Kukuk' (schovajte si tvár za dlane). Začína chápať koncept, že veci nezmiznú, keď ich nevidí."
+                ]
+            },
+            month7: {
+                title: "7 - 9 Mesiacov: Doba pohybu a úzkosti z cudzích",
+                milestones: [
+                    "Samo sedí bez opory.",
+                    "Plazí sa alebo začína štvornožkovať.",
+                    "Buduje sa 'pinzetový úchop' (palec a ukazovák).",
+                    "Začína rozumieť slovu 'NIE' a svojmu menu.",
+                    "Separačná úzkosť a strach z cudzích ľudí (znak zdravého vývoja a väzby na vás!)."
+                ],
+                action: [
+                    "<strong>Bezpečnosť:</strong> 'Baby-proof' domácnosť. Teraz sa dostane všade. Zabezpečte zásuvky a hrany.",
+                    "<strong>Hra:</strong> Ponúknite mu nádobu, do ktorej môže vhadzovať a vyberať predmety (tréning pinzetového úchopu a pochopenia objemu).",
+                    "<strong>Reakcia na úzkosť:</strong> Ak plače, keď odchádzate z miestnosti, neplížte sa preč. Povedzte 'Idem vedľa, hneď sa vrátim' a vráťte sa. Budujete dôveru."
+                ]
+            },
+            month10: {
+                title: "10 - 12 Mesiacov: Malý vedec a prvé kroky",
+                milestones: [
+                    "Stavia sa popri nábytku, robí kroky s oporou.",
+                    "Ukazuje prstom na veci, ktoré chce alebo ho zaujímajú (Kľúčový sociálny míľnik!).",
+                    "Skúša prvé zmysluplné slová ('mama', 'tata', 'daj').",
+                    "Testuje hranice a príčinu-následok (Zhodí hračku zo stoličky a pozerá, čo urobíte)."
+                ],
+                action: [
+                    "<strong>Reakcia na ukazovanie:</strong> Keď na niečo ukáže, pomenujte to. 'Áno, to je pes. Hav-hav.' Tým potvrdzujete, že zdieľate pozornosť.",
+                    "<strong>Fyzická podpora:</strong> Nenúťte ho chodiť za ruky, ak to samo nevyhľadáva. Radšej strategicky rozmiestnite stabilný nábytok, aby mohol ručkovat.",
+                    "<strong>Hranice:</strong> Ak robí niečo nežiaduce (napr. ťahá mačku za chvost), pokojne zasiahnite, povedzte pevné 'Nie, to bolí' a presmerujte jeho pozornosť inam."
+                ]
+            }
+        };
+
+        // Function to update Age Tab Content
+        function changeAgeTab(ageKey) {
+            // Update Tab Styling
+            document.querySelectorAll('button[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-slate-500');
+            });
+            document.getElementById('tab-' + ageKey).classList.add('tab-active');
+            document.getElementById('tab-' + ageKey).classList.remove('text-slate-500');
+
+            // Update Content
+            const data = ageData[ageKey];
+            const contentArea = document.getElementById('age-content');
+            
+            let milestonesHTML = data.milestones.map(m => `<li class="flex items-start"><span class="text-primary mr-2">✓</span> ${m}</li>`).join('');
+            let actionHTML = data.action.map(a => `<li class="mb-2">${a}</li>`).join('');
+
+            contentArea.innerHTML = `
+                <div class="animate-fade-in transition-opacity duration-300">
+                    <h3 class="text-xl font-bold text-primary mb-4">${data.title}</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-bold text-slate-700 mb-3 border-b pb-1">Čo sa učí (Míľniky)</h4>
+                            <ul class="space-y-2 text-sm text-slate-600">
+                                ${milestonesHTML}
+                            </ul>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                            <h4 class="font-bold text-secondary mb-3 border-b pb-1">Ako ho podporiť (Vaša rola)</h4>
+                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                                ${actionHTML}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize Chart.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render initial tab
+            changeAgeTab('month5');
+
+            // Render Chart
+            const ctx = document.getElementById('brainChart').getContext('2d');
+            
+            // Simplified data to represent exponential synapse growth early on, then pruning
+            const ageLabels = ['Narodenie', '3 mes.', '6 mes.', '9 mes.', '1 rok', '2 roky', '5 rokov'];
+            const sensoryLanguageData = [10, 30, 80, 100, 95, 80, 70]; // Peak around 8-10 months
+            const cognitiveData = [5, 10, 20, 40, 60, 90, 100]; // Peaks later
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ageLabels,
+                    datasets: [
+                        {
+                            label: 'Zmysly a Jazyk (Tvorba spojení)',
+                            data: sensoryLanguageData,
+                            borderColor: '#0d9488', // primary
+                            backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Vyššie kognitívne funkcie',
+                            data: cognitiveData,
+                            borderColor: '#f59e0b', // secondary
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: "'Segoe UI', sans-serif" },
+                                boxWidth: 15
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    return label + ' (relatívna intenzita)';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            display: false, // Hide Y axis as it's an abstract concept for parents
+                            beginAtZero: true
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
