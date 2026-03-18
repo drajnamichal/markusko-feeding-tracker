@@ -99,11 +99,11 @@ const QuickAddButtons: React.FC<QuickAddButtonsProps> = ({ onQuickAdd }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
         {/* Feeding Button */}
         <button
-          onClick={() => handleQuickAdd('feeding-formula-166', { formulaMl: 166 })}
-          disabled={buttonStates['feeding-formula-166'] === 'loading' || buttonStates['feeding-formula-166'] === 'success'}
-          className={getButtonClass('feeding-formula-166', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
+          onClick={() => handleQuickAdd('feeding-formula-200', { formulaMl: 200 })}
+          disabled={buttonStates['feeding-formula-200'] === 'loading' || buttonStates['feeding-formula-200'] === 'success'}
+          className={getButtonClass('feeding-formula-200', 'bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg p-3 transition-all hover:scale-105 active:scale-95 flex flex-col items-center gap-1 border border-white/30')}
         >
-          {getButtonContent('feeding-formula-166', 'fas fa-prescription-bottle', 'Umelé 166ml')}
+          {getButtonContent('feeding-formula-200', 'fas fa-prescription-bottle', 'Umelé 200ml')}
         </button>
 
         {/* Diaper Buttons */}
